@@ -18,6 +18,7 @@ public struct DashboardView: View {
             header
             statsGrid
             weeklyProgressCard
+            achievementsCard
             Spacer()
         }
         .padding(24)
@@ -93,6 +94,48 @@ public struct DashboardView: View {
                 Text("Goal: 8 glasses/day")
                     .font(.system(size: 11, design: .rounded))
                     .foregroundStyle(Color(hex: theme.text).opacity(0.6))
+            }
+        }
+    }
+
+    private var achievementsCard: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Label("Achievements", systemImage: "rosette")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(hex: theme.accent))
+
+                if coordinator.achievements.isEmpty {
+                    Text("No achievements yet.")
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundStyle(Color(hex: theme.text).opacity(0.65))
+                } else {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 8)], spacing: 8) {
+                        ForEach(coordinator.achievements) { badge in
+                            HStack(spacing: 6) {
+                                Image(systemName: badge.icon)
+                                    .font(.system(size: 11, weight: .semibold))
+                                Text(badge.title)
+                                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background {
+                                Capsule()
+                                    .fill(
+                                        badge.isUnlocked
+                                            ? Color(hex: theme.accent).opacity(0.18)
+                                            : Color(hex: theme.secondary).opacity(0.45)
+                                    )
+                            }
+                            .foregroundStyle(
+                                badge.isUnlocked
+                                    ? Color(hex: theme.accent)
+                                    : Color(hex: theme.text).opacity(0.5)
+                            )
+                        }
+                    }
+                }
             }
         }
     }

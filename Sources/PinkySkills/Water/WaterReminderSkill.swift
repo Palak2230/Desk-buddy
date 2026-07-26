@@ -14,12 +14,24 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
     private let waterStore: WaterStoreProtocol
     private let stateMachine: CharacterStateMachine
+    private let playSound: (_ kind: SoundKind) -> Void
     private var reminderTimer: Timer?
     private var ignoreWorkItem: DispatchWorkItem?
 
-    public init(waterStore: WaterStoreProtocol, stateMachine: CharacterStateMachine) {
+    public enum SoundKind: Sendable {
+        case reminder
+        case success
+        case snooze
+    }
+
+    public init(
+        waterStore: WaterStoreProtocol,
+        stateMachine: CharacterStateMachine,
+        playSound: @escaping (_ kind: SoundKind) -> Void = { _ in }
+    ) {
         self.waterStore = waterStore
         self.stateMachine = stateMachine
+        self.playSound = playSound
     }
 
     public func activate() async {
@@ -47,6 +59,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     public func triggerReminder() {
         ignoreWorkItem?.cancel()
         isReminderActive = false
+        playSound(.reminder)
         stateMachine.transition(to: .walk)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
@@ -62,6 +75,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         ignoreWorkItem?.cancel()
         ignoreWorkItem = nil
         waterStore.addRecord(WaterRecord())
+        playSound(.success)
         isReminderActive = false
         stateMachine.transition(to: .drink)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
@@ -79,6 +93,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     public func snooze() {
         ignoreWorkItem?.cancel()
         ignoreWorkItem = nil
+        playSound(.snooze)
         isReminderActive = false
         stateMachine.resetToIdle()
         scheduleReminder(afterMinutes: 5)

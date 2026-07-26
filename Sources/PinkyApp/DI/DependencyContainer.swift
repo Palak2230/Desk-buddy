@@ -18,7 +18,17 @@ public final class DependencyContainer: ObservableObject {
         }
         let waterSkill = WaterReminderSkill(
             waterStore: coordinator.waterStore,
-            stateMachine: stateMachine
+            stateMachine: stateMachine,
+            playSound: { kind in
+                switch kind {
+                case .reminder:
+                    coordinator.soundService.playReminder(volume: coordinator.settings.volume)
+                case .success:
+                    coordinator.soundService.playSuccess(volume: coordinator.settings.volume)
+                case .snooze:
+                    coordinator.soundService.playSnooze(volume: coordinator.settings.volume)
+                }
+            }
         )
         let skillRegistry = SkillRegistry()
 
