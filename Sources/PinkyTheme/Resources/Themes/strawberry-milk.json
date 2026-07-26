@@ -1,0 +1,11 @@
+{
+  "id": "strawberry-milk",
+  "name": "Strawberry Milk",
+  "primary": "#FFB6C1",
+  "secondary": "#FFF0F5",
+  "accent": "#FF69B4",
+  "background": "#FFF5F7",
+  "surface": "#FFFFFF",
+  "text": "#4A3040",
+  "speechBubble": "#FFFFFF"
+}

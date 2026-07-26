@@ -1,0 +1,11 @@
+# SwiftFormat configuration for Pinky
+# https://github.com/nicklockwood/SwiftFormat
+
+--swiftversion 5.9
+--indent 4
+--maxwidth 120
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--header strip
+--exclude .build,DerivedData,.swiftpm

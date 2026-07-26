@@ -1,0 +1,42 @@
+import SwiftUI
+import PinkyTheme
+import PinkyUI
+import PinkyServices
+import PinkyCharacter
+import PinkySkills
+
+/// Main companion window content — character + optional speech bubble.
+public struct CompanionWindowView: View {
+    @Environment(\.pinkyTheme) private var theme
+    @ObservedObject private var stateMachine: CharacterStateMachine
+    @ObservedObject private var waterSkill: WaterReminderSkill
+    private let scale: Double
+
+    public init(
+        stateMachine: CharacterStateMachine,
+        waterSkill: WaterReminderSkill,
+        scale: Double
+    ) {
+        self.stateMachine = stateMachine
+        self.waterSkill = waterSkill
+        self.scale = scale
+    }
+
+    public var body: some View {
+        VStack(spacing: 8) {
+            if waterSkill.isReminderActive {
+                SpeechBubbleView(
+                    message: "Did you drink water? 💧",
+                    primaryAction: ("Yes!", { waterSkill.confirmDrink() }),
+                    secondaryAction: ("Remind me in 5 min", { waterSkill.snooze() })
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
+
+            CompanionCharacterView(stateMachine: stateMachine, scale: scale)
+        }
+        .padding(12)
+        .background(Color.clear)
+        .animation(.spring(response: 0.4), value: waterSkill.isReminderActive)
+    }
+}
