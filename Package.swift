@@ -48,6 +48,8 @@ let package = Package(
                 "Core",
                 "Theme",
                 "Character",
+                "Domain",
+                "Animations",
             ],
             path: "Sources/PinkyUI"
         ),

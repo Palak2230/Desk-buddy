@@ -15,6 +15,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     private let waterStore: WaterStoreProtocol
     private let stateMachine: CharacterStateMachine
     private var reminderTimer: Timer?
+    private var ignoreWorkItem: DispatchWorkItem?
 
     public init(waterStore: WaterStoreProtocol, stateMachine: CharacterStateMachine) {
         self.waterStore = waterStore
@@ -26,6 +27,8 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     }
 
     public func deactivate() async {
+        ignoreWorkItem?.cancel()
+        ignoreWorkItem = nil
         reminderTimer?.invalidate()
         reminderTimer = nil
     }
@@ -42,24 +45,62 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
     /// Triggers the water reminder sequence on the companion.
     public func triggerReminder() {
-        isReminderActive = true
+        ignoreWorkItem?.cancel()
+        isReminderActive = false
         stateMachine.transition(to: .walk)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+            guard let self else { return }
+            stateMachine.transition(to: .wave)
+            isReminderActive = true
+            scheduleIgnoreFallback()
+        }
     }
 
     /// Records a positive water intake response.
     public func confirmDrink() {
+        ignoreWorkItem?.cancel()
+        ignoreWorkItem = nil
         waterStore.addRecord(WaterRecord())
         isReminderActive = false
         stateMachine.transition(to: .drink)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
             self?.stateMachine.transition(to: .happy)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                self?.stateMachine.transition(to: .walk)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    self?.stateMachine.resetToIdle()
+                }
+            }
         }
     }
 
     /// Snoozes the reminder for 5 minutes.
     public func snooze() {
+        ignoreWorkItem?.cancel()
+        ignoreWorkItem = nil
         isReminderActive = false
         stateMachine.resetToIdle()
         scheduleReminder(afterMinutes: 5)
+    }
+
+    private func scheduleIgnoreFallback() {
+        ignoreWorkItem?.cancel()
+
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self, isReminderActive else { return }
+
+            isReminderActive = false
+            stateMachine.transition(to: .peek)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.stateMachine.resetToIdle()
+            }
+
+            scheduleReminder(afterMinutes: 5)
+        }
+
+        ignoreWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: workItem)
     }
 }

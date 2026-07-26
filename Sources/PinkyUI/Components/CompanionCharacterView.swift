@@ -1,4 +1,5 @@
 import SwiftUI
+import SpriteKit
 import Core
 import Theme
 import Character
@@ -16,14 +17,18 @@ public extension EnvironmentValues {
     }
 }
 
-/// Placeholder companion character view — will be replaced with SpriteKit in a future milestone.
+/// SpriteKit-powered companion character view.
 public struct CompanionCharacterView: View {
+    @Environment(\.appTheme) private var theme
     @ObservedObject private var stateMachine: CharacterStateMachine
+    @StateObject private var animationController: CharacterAnimationController
     private let scale: Double
+    private let scene = CompanionSpriteScene(size: CGSize(width: 140, height: 170))
 
     public init(stateMachine: CharacterStateMachine, scale: Double = 1.0) {
         self.stateMachine = stateMachine
         self.scale = scale
+        _animationController = StateObject(wrappedValue: CharacterAnimationController(stateMachine: stateMachine))
     }
 
     public var body: some View {
@@ -33,57 +38,42 @@ public struct CompanionCharacterView: View {
         }
         .scaleEffect(scale)
         .animation(.easeInOut(duration: 0.3), value: stateMachine.currentState)
+        .onAppear {
+            scene.apply(
+                state: animationController.activeState,
+                frameIndex: animationController.frameIndex,
+                theme: theme
+            )
+        }
+        .onChange(of: animationController.frameIndex) { _, newFrame in
+            scene.apply(
+                state: animationController.activeState,
+                frameIndex: newFrame,
+                theme: theme
+            )
+        }
+        .onChange(of: animationController.activeState) { _, newState in
+            scene.apply(
+                state: newState,
+                frameIndex: animationController.frameIndex,
+                theme: theme
+            )
+        }
+        .onChange(of: theme.id) { _, _ in
+            scene.apply(
+                state: animationController.activeState,
+                frameIndex: animationController.frameIndex,
+                theme: theme
+            )
+        }
     }
 
     // MARK: - Subviews
 
-    @ViewBuilder
     private var characterBody: some View {
-        ZStack {
-            // Body placeholder — pastel coquette aesthetic
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
-                    LinearGradient(
-                        colors: [Color(hex: "#FFB6C1"), Color(hex: "#FFC0CB")],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(width: 80, height: 100)
-
-            VStack(spacing: 0) {
-                // Head
-                Circle()
-                    .fill(Color(hex: "#FFE4E1"))
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        HStack(spacing: 12) {
-                            eye
-                            eye
-                        }
-                        .offset(y: -2)
-                    )
-                    .overlay(
-                        Text("♥")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color(hex: "#FF69B4"))
-                            .offset(x: 18, y: -18)
-                    )
-
-                // Hoodie body
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(hex: "#FFB6C1"))
-                    .frame(width: 60, height: 40)
-            }
-        }
-        .shadow(color: Color(hex: "#FFB6C1").opacity(0.4), radius: 8, y: 4)
-    }
-
-    private var eye: some View {
-        Circle()
-            .fill(Color(hex: "#4A3040"))
-            .frame(width: stateMachine.currentState == .blink ? 2 : 6, height: 6)
-            .animation(.easeInOut(duration: 0.1), value: stateMachine.currentState)
+        SpriteView(scene: scene, options: [.allowsTransparency])
+            .frame(width: 130, height: 160)
+            .background(Color.clear)
     }
 
     private var stateLabel: some View {

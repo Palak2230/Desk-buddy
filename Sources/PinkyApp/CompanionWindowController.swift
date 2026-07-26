@@ -6,6 +6,13 @@ import Presentation
 @MainActor
 final class CompanionWindowController: NSWindowController {
     private let container: DependencyContainer
+    private let defaults = UserDefaults.standard
+    private var moveObserver: NSObjectProtocol?
+
+    private enum Keys {
+        static let originX = "com.palakagarwal.deskbuddy.window.originX"
+        static let originY = "com.palakagarwal.deskbuddy.window.originY"
+    }
 
     init(container: DependencyContainer) {
         self.container = container
@@ -35,15 +42,17 @@ final class CompanionWindowController: NSWindowController {
         panel.hasShadow = false
         panel.isMovableByWindowBackground = true
 
-        // Position in bottom-right corner
-        if let screen = NSScreen.main {
-            let screenFrame = screen.visibleFrame
-            let x = screenFrame.maxX - 180
-            let y = screenFrame.minY + 20
+        let x = defaults.double(forKey: Keys.originX)
+        let y = defaults.double(forKey: Keys.originY)
+        if x > 0, y > 0 {
             panel.setFrameOrigin(NSPoint(x: x, y: y))
+        } else if let screen = NSScreen.main {
+            let screenFrame = screen.visibleFrame
+            panel.setFrameOrigin(NSPoint(x: screenFrame.maxX - 180, y: screenFrame.minY + 20))
         }
 
         super.init(window: panel)
+        observeWindowMoves(panel: panel)
     }
 
     @available(*, unavailable)
@@ -53,5 +62,30 @@ final class CompanionWindowController: NSWindowController {
 
     func show() {
         window?.orderFrontRegardless()
+    }
+
+    deinit {
+        if let moveObserver {
+            NotificationCenter.default.removeObserver(moveObserver)
+        }
+    }
+
+    private func observeWindowMoves(panel: NSPanel) {
+        moveObserver = NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: panel,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor [weak self] in
+                guard
+                    let self,
+                    let window = notification.object as? NSWindow
+                else { return }
+
+                let origin = window.frame.origin
+                defaults.set(origin.x, forKey: Keys.originX)
+                defaults.set(origin.y, forKey: Keys.originY)
+            }
+        }
     }
 }
