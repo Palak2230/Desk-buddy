@@ -35,6 +35,8 @@ final class CompanionSpriteScene: SKScene {
 
     // Atlas overlays (if present they replace plain-tint appearance)
     private let atlasProvider = CompanionAtlasProvider()
+    private lazy var rig = CharacterRig(atlasProvider: atlasProvider)
+    private let rigAnimator = CharacterRigAnimator()
     private var outfit: CompanionAtlasProvider.Outfit = .classic
     private var hasTorsoTexture = false
     private var hasHoodTexture = false
@@ -60,10 +62,23 @@ final class CompanionSpriteScene: SKScene {
 
     func setOutfit(_ newOutfit: CompanionAtlasProvider.Outfit) {
         outfit = newOutfit
+        rig.reloadTextures()
         applyAtlasTexturesIfAvailable()
     }
 
     func apply(state: CharacterState, frameIndex: Int, theme: Theme) {
+        if shouldUseRigRenderer {
+            rig.rootNode.position = CGPoint(x: size.width / 2, y: 0)
+            rig.applyTheme(theme)
+            rigAnimator.apply(state: state, frameIndex: frameIndex, rig: rig, facingRight: &facingRight)
+            rig.enforcePartValidationVisibility()
+            rig.rootNode.alpha = 1
+            frameSpriteNode.alpha = 0
+            rootNode.alpha = 0
+            shadowNode.alpha = 0.2
+            return
+        }
+
         // Keep atlas-frame rendering anchored even after scene resize.
         frameSpriteNode.position = CGPoint(x: size.width / 2, y: 92)
 
@@ -308,6 +323,7 @@ final class CompanionSpriteScene: SKScene {
         statusNode.zPosition = 31
 
         addChild(shadowNode)
+        addChild(rig.rootNode)
         addChild(frameSpriteNode)
         addChild(rootNode)
 
@@ -491,5 +507,9 @@ final class CompanionSpriteScene: SKScene {
         let maxHeight: CGFloat = 150
         let scale = min(maxWidth / textureSize.width, maxHeight / textureSize.height)
         return CGSize(width: textureSize.width * scale, height: textureSize.height * scale)
+    }
+
+    private var shouldUseRigRenderer: Bool {
+        true
     }
 }

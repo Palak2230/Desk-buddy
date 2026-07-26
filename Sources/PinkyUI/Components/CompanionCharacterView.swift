@@ -22,13 +22,14 @@ public struct CompanionCharacterView: View {
     @Environment(\.appTheme) private var theme
     @ObservedObject private var stateMachine: CharacterStateMachine
     @StateObject private var animationController: CharacterAnimationController
+    @State private var scene: CompanionSpriteScene
     private let scale: Double
-    private let scene = CompanionSpriteScene(size: CGSize(width: 140, height: 170))
 
     public init(stateMachine: CharacterStateMachine, scale: Double = 1.0) {
         self.stateMachine = stateMachine
         self.scale = scale
         _animationController = StateObject(wrappedValue: CharacterAnimationController(stateMachine: stateMachine))
+        _scene = State(initialValue: CompanionSpriteScene(size: CGSize(width: 140, height: 170)))
     }
 
     public var body: some View {

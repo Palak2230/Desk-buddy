@@ -15,6 +15,7 @@ final class CompanionAtlasProvider {
     private let atlases: [SKTextureAtlas]
     private let stateFrameURLs: [String: [URL]]
     private var textureURLCache: [URL: SKTexture] = [:]
+    private static var missingCharacterPartWarnings = Set<String>()
     private static let atlasNames = [
         "CompanionFrames",
         "CompanionBase",
@@ -78,6 +79,36 @@ final class CompanionAtlasProvider {
 
     func expressionTexture(_ expression: String) -> SKTexture? {
         texture(named: "expression_\(expression)")
+    }
+
+    /// Loads rig character part textures from:
+    /// Resources/Character/<Group>/<name>.png
+    /// Example: Character/Head/head.png
+    func characterPartTexture(group: String, name: String) -> SKTexture? {
+        let key = "\(group.lowercased())/\(name.lowercased())"
+
+        if let url = Self.characterPartURLs[key] {
+            if let cached = textureURLCache[url] {
+                return cached
+            }
+            if let image = NSImage(contentsOf: url) {
+                let texture = SKTexture(image: image)
+                textureURLCache[url] = texture
+                return texture
+            }
+        }
+
+        // Flattened-resource fallback where folder hierarchy is stripped.
+        if let flatTexture = texture(named: name) {
+            return flatTexture
+        }
+
+        let warningKey = "missing:\(key)"
+        if !Self.missingCharacterPartWarnings.contains(warningKey) {
+            Self.missingCharacterPartWarnings.insert(warningKey)
+            print("CharacterRig warning: missing part texture \(group)/\(name).png")
+        }
+        return nil
     }
 
     private static func atlasExists(named name: String) -> Bool {
@@ -189,6 +220,34 @@ final class CompanionAtlasProvider {
             unique[directory] = directory
         }
         return Array(unique.values)
+    }()
+
+    private static let characterPartURLs: [String: URL] = {
+        var map: [String: URL] = [:]
+        let validGroups = Set(["head", "face", "body", "legs", "extras"])
+
+        for baseDirectory in resourceSearchDirectories {
+            guard let enumerator = FileManager.default.enumerator(
+                at: baseDirectory,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ) else { continue }
+
+            for case let fileURL as URL in enumerator where fileURL.pathExtension.lowercased() == "png" {
+                let relativePath = fileURL.path.replacingOccurrences(of: baseDirectory.path, with: "")
+                let lowerPath = relativePath.lowercased()
+                guard let markerRange = lowerPath.range(of: "/character/") else { continue }
+
+                let suffix = lowerPath[markerRange.upperBound...]
+                let segments = suffix.split(separator: "/")
+                guard segments.count >= 2 else { continue }
+                let group = String(segments[0]).lowercased()
+                guard validGroups.contains(group) else { continue }
+                let name = fileURL.deletingPathExtension().lastPathComponent.lowercased()
+                map["\(group)/\(name)"] = fileURL
+            }
+        }
+        return map
     }()
 
     private static func parsedFrameIndex(fromStem stem: String) -> Int {
