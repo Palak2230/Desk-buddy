@@ -63,6 +63,16 @@ final class CompanionWindowController: NSWindowController {
                 container?.coordinator.settings.walkingSpeed ?? 220
             }
         )
+        container.waterSkill.requestReminderApproach = { [weak self] completion in
+            Task { @MainActor [weak self] in
+                self?.movementController?.moveToCursor(completion: completion)
+            }
+        }
+        container.waterSkill.requestReturnHome = { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.movementController?.walkHome()
+            }
+        }
         observeWindowMoves(panel: panel)
     }
 
@@ -74,6 +84,10 @@ final class CompanionWindowController: NSWindowController {
     func show() {
         window?.orderFrontRegardless()
         movementController?.walkHome()
+    }
+
+    func moveBuddyToCursor(completion: (() -> Void)? = nil) {
+        movementController?.moveToCursor(completion: completion)
     }
 
     deinit {

@@ -14,6 +14,10 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     @Published public private(set) var reminderMessage = "Did you drink water? 💧"
     @Published public private(set) var heartBurstID = UUID()
     @Published public private(set) var phase: ReminderPhase = .idle
+    /// Optional host callback that moves companion near cursor before prompting.
+    public var requestReminderApproach: (((@escaping () -> Void) -> Void))?
+    /// Optional host callback to return companion to home after reminder flow.
+    public var requestReturnHome: (() -> Void)?
 
     private let waterStore: WaterStoreProtocol
     private let stateMachine: CharacterStateMachine
@@ -79,21 +83,28 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     }
 
     /// Triggers the water reminder sequence on the companion.
-    public func triggerReminder() {
+    public func triggerReminder(shouldApproach: Bool = true) {
         reminderTimer?.invalidate()
         cancelFlow(resetPhase: false)
         phase = .approaching
         isReminderActive = false
         reminderMessage = "Did you drink water? 💧"
         playSound(.reminder)
-        stateMachine.transition(to: .walk)
+        guard shouldApproach else {
+            presentReminderPrompt()
+            return
+        }
+        if let requestReminderApproach {
+            requestReminderApproach { [weak self] in
+                guard let self else { return }
+                self.presentReminderPrompt()
+            }
+            return
+        }
 
+        stateMachine.transition(to: .walk)
         enqueueFlow(after: Constants.walkInDuration) { [weak self] in
-            guard let self else { return }
-            stateMachine.transition(to: .wave)
-            phase = .prompting
-            isReminderActive = true
-            scheduleFirstIgnoreFallback()
+            self?.presentReminderPrompt()
         }
     }
 
@@ -120,6 +131,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         ) { [weak self] in
             self?.stateMachine.resetToIdle()
             self?.phase = .idle
+            self?.requestReturnHome?()
             guard let self else { return }
             scheduleReminder(afterMinutes: regularReminderIntervalMinutes)
         }
@@ -132,6 +144,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         isReminderActive = false
         phase = .snoozed
         stateMachine.resetToIdle()
+        requestReturnHome?()
         scheduleSnoozeReminder()
     }
 
@@ -152,6 +165,12 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         }
     }
 
+    private func presentReminderPrompt() {
+        phase = .prompting
+        isReminderActive = true
+        scheduleFirstIgnoreFallback()
+    }
+
     private func scheduleSecondChanceFallback() {
         enqueueFlow(after: Constants.secondChanceTimeout) { [weak self] in
             guard let self, isReminderActive else { return }
@@ -161,6 +180,7 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
             enqueueFlow(after: Constants.peekDuration) { [weak self] in
                 self?.stateMachine.resetToIdle()
+                self?.requestReturnHome?()
                 self?.scheduleSnoozeReminder()
             }
         }

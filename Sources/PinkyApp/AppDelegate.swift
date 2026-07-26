@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var companionWindow: CompanionWindowController?
     private var dashboardWindow: NSWindow?
     private var settingsWindow: NSWindow?
+    private var statusItem: NSStatusItem?
     private var statusMenu: NSMenu?
     private var menuRefreshTimer: Timer?
 
@@ -41,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupMenuBar() {
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        self.statusItem = statusItem
 
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "heart.fill", accessibilityDescription: "Desk Buddy")
@@ -53,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         menu.addItem(makeMenuItem(title: "Open Dashboard", action: #selector(openDashboard)))
         menu.addItem(makeMenuItem(title: "Settings", action: #selector(openSettings)))
+        menu.addItem(makeMenuItem(title: "Move Buddy To Cursor", action: #selector(moveBuddyToCursor)))
         menu.addItem(makeMenuItem(title: "Test Water Reminder", action: #selector(testReminder)))
         menu.addItem(.separator())
         menu.addItem(makeMenuItem(title: "Quit Desk Buddy", action: #selector(quit)))
@@ -120,7 +123,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func testReminder() {
-        container.waterSkill.triggerReminder()
+        // Delay slightly so the menu closes and cursor can settle
+        // before sampling the destination.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            self?.companionWindow?.moveBuddyToCursor { [weak self] in
+                Task { @MainActor [weak self] in
+                    self?.container.waterSkill.triggerReminder(shouldApproach: false)
+                }
+            }
+        }
+    }
+
+    @objc private func moveBuddyToCursor() {
+        companionWindow?.moveBuddyToCursor(completion: nil)
     }
 
     @objc private func quit() {

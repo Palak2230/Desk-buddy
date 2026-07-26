@@ -15,6 +15,7 @@ final class CompanionMovementController: CompanionMovementControlling {
     private var homePosition: CGPoint
     private var movementToken = UUID()
     private var facing: FacingDirection = .right
+    private var pendingCompletion: (() -> Void)?
 
     private enum FacingDirection {
         case left
@@ -39,7 +40,12 @@ final class CompanionMovementController: CompanionMovementControlling {
     }
 
     func move(to destination: CGPoint) {
+        move(to: destination, completion: nil)
+    }
+
+    func move(to destination: CGPoint, completion: (() -> Void)?) {
         guard let panel else { return }
+        pendingCompletion = completion
         let start = panel.frame.origin
         let distance = hypot(destination.x - start.x, destination.y - start.y)
 
@@ -48,6 +54,8 @@ final class CompanionMovementController: CompanionMovementControlling {
             isMoving = false
             stateMachine.transition(to: .stop)
             enqueueIdleReset()
+            pendingCompletion?()
+            pendingCompletion = nil
             return
         }
 
@@ -66,20 +74,7 @@ final class CompanionMovementController: CompanionMovementControlling {
         let startWalk: @MainActor () -> Void = { [weak self] in
             guard let self, let panel = self.panel, self.movementToken == token else { return }
             self.stateMachine.transition(to: .walk)
-
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = duration
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut) // accel/decel
-                panel.animator().setFrameOrigin(destination)
-            } completionHandler: { [weak self] in
-                Task { @MainActor [weak self] in
-                    guard let self, self.movementToken == token else { return }
-                    self.currentDestination = nil
-                    self.isMoving = false
-                    self.stateMachine.transition(to: .stop)
-                    self.enqueueIdleReset()
-                }
-            }
+            self.animateWalk(panel: panel, to: destination, duration: duration, token: token)
         }
 
         if needsTurn {
@@ -95,7 +90,28 @@ final class CompanionMovementController: CompanionMovementControlling {
     }
 
     func walkHome() {
-        move(to: homePosition)
+        move(to: homePosition, completion: nil)
+    }
+
+    func moveToCursor(completion: (() -> Void)? = nil) {
+        guard let panel else { return }
+        let cursor = NSEvent.mouseLocation
+        let panelSize = panel.frame.size
+
+        let containingFrame = NSScreen.screens
+            .map(\.visibleFrame)
+            .first(where: { $0.contains(cursor) }) ?? NSScreen.main?.visibleFrame
+
+        guard let frame = containingFrame else {
+            move(to: homePosition, completion: completion)
+            return
+        }
+
+        let targetX = cursor.x - panelSize.width / 2
+        let targetY = cursor.y - panelSize.height / 2
+        let clampedX = min(max(targetX, frame.minX + 8), frame.maxX - panelSize.width - 8)
+        let clampedY = min(max(targetY, frame.minY + 8), frame.maxY - panelSize.height - 8)
+        move(to: CGPoint(x: clampedX, y: clampedY), completion: completion)
     }
 
     func cancelMovement() {
@@ -104,6 +120,7 @@ final class CompanionMovementController: CompanionMovementControlling {
         currentDestination = nil
         stateMachine.transition(to: .stop)
         enqueueIdleReset()
+        pendingCompletion = nil
     }
 
     func updateHomePosition(_ point: CGPoint) {
@@ -118,5 +135,52 @@ final class CompanionMovementController: CompanionMovementControlling {
                 stateMachine.resetToIdle()
             }
         }
+    }
+
+    private func animateWalk(panel: NSPanel, to destination: CGPoint, duration: TimeInterval, token: UUID) {
+        let start = panel.frame.origin
+        let dx = destination.x - start.x
+        let dy = destination.y - start.y
+        let startTime = CACurrentMediaTime()
+        let stepInterval: TimeInterval = 1.0 / 60.0
+
+        func finishIfCurrentToken() {
+            guard movementToken == token else { return }
+            panel.setFrameOrigin(destination)
+            currentDestination = nil
+            isMoving = false
+            stateMachine.transition(to: .stop)
+            enqueueIdleReset()
+            pendingCompletion?()
+            pendingCompletion = nil
+        }
+
+        func step() {
+            guard movementToken == token else { return }
+
+            if duration <= 0 {
+                finishIfCurrentToken()
+                return
+            }
+
+            let elapsed = CACurrentMediaTime() - startTime
+            let t = min(1.0, max(0.0, elapsed / duration))
+            // Smoothstep (ease-in/ease-out)
+            let eased = t * t * (3.0 - 2.0 * t)
+            let x = start.x + dx * eased
+            let y = start.y + dy * eased
+            panel.setFrameOrigin(CGPoint(x: x, y: y))
+
+            if t >= 1.0 {
+                finishIfCurrentToken()
+                return
+            }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + stepInterval) {
+                step()
+            }
+        }
+
+        step()
     }
 }
