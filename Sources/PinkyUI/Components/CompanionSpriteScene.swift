@@ -14,10 +14,16 @@ final class CompanionSpriteScene: SKScene {
 
     private let torsoNode = SKSpriteNode(color: .white, size: CGSize(width: 74, height: 88))
     private let hoodNode = SKSpriteNode(color: .white, size: CGSize(width: 72, height: 52))
+    private let pocketNode = SKShapeNode(rectOf: CGSize(width: 34, height: 14), cornerRadius: 6)
+    private let hoodieStringLeftNode = SKShapeNode(rectOf: CGSize(width: 2.4, height: 20), cornerRadius: 1.2)
+    private let hoodieStringRightNode = SKShapeNode(rectOf: CGSize(width: 2.4, height: 20), cornerRadius: 1.2)
     private let headNode = SKSpriteNode(color: .white, size: CGSize(width: 62, height: 58))
     private let hairNode = SKSpriteNode(color: .white, size: CGSize(width: 66, height: 40))
+    private let bangLeftNode = SKShapeNode(circleOfRadius: 8)
+    private let bangRightNode = SKShapeNode(circleOfRadius: 8)
     private let blushLeftNode = SKShapeNode(circleOfRadius: 4.5)
     private let blushRightNode = SKShapeNode(circleOfRadius: 4.5)
+    private let expressionNode = SKSpriteNode(color: .clear, size: CGSize(width: 44, height: 22))
     private let leftEyeNode = SKShapeNode(ellipseOf: CGSize(width: 7, height: 7))
     private let rightEyeNode = SKShapeNode(ellipseOf: CGSize(width: 7, height: 7))
     private let mouthNode = SKShapeNode(path: CGPath(ellipseIn: CGRect(x: -5, y: -2, width: 10, height: 5), transform: nil))
@@ -29,6 +35,11 @@ final class CompanionSpriteScene: SKScene {
     // Atlas overlays (if present they replace plain-tint appearance)
     private let atlasProvider = CompanionAtlasProvider()
     private var outfit: CompanionAtlasProvider.Outfit = .classic
+    private var hasTorsoTexture = false
+    private var hasHoodTexture = false
+    private var hasHeadTexture = false
+    private var hasHairTexture = false
+    private var hasFeetTexture = false
 
     private var baseBodyY: CGFloat = 58
     private var baseHeadY: CGFloat = 114
@@ -64,8 +75,13 @@ final class CompanionSpriteScene: SKScene {
         rootNode.zRotation = 0
         torsoNode.position = CGPoint(x: 0, y: baseBodyY)
         hoodNode.position = CGPoint(x: 0, y: baseBodyY + 20)
+        pocketNode.position = CGPoint(x: 0, y: baseBodyY - 4)
+        hoodieStringLeftNode.position = CGPoint(x: -10, y: baseBodyY + 20)
+        hoodieStringRightNode.position = CGPoint(x: 10, y: baseBodyY + 20)
         headNode.position = CGPoint(x: 0, y: baseHeadY)
         hairNode.position = CGPoint(x: 0, y: baseHeadY + 14)
+        bangLeftNode.position = CGPoint(x: -14, y: baseHeadY + 6)
+        bangRightNode.position = CGPoint(x: 14, y: baseHeadY + 6)
         headNode.zRotation = 0
         torsoNode.zRotation = 0
         leftFootNode.position = CGPoint(x: -16, y: baseBodyY - 44)
@@ -77,6 +93,8 @@ final class CompanionSpriteScene: SKScene {
         statusNode.text = ""
         statusNode.alpha = 0
         statusNode.position = CGPoint(x: 0, y: baseHeadY + 26)
+        expressionNode.position = CGPoint(x: 0, y: baseHeadY + 2)
+        expressionNode.alpha = 0
         setExpression(.neutral)
 
         switch state {
@@ -183,6 +201,18 @@ final class CompanionSpriteScene: SKScene {
         hoodNode.zPosition = 11
         hoodNode.colorBlendFactor = 1
 
+        pocketNode.position = CGPoint(x: 0, y: baseBodyY - 4)
+        pocketNode.zPosition = 12
+        pocketNode.strokeColor = .clear
+
+        hoodieStringLeftNode.position = CGPoint(x: -10, y: baseBodyY + 20)
+        hoodieStringLeftNode.zPosition = 13
+        hoodieStringLeftNode.strokeColor = .clear
+
+        hoodieStringRightNode.position = CGPoint(x: 10, y: baseBodyY + 20)
+        hoodieStringRightNode.zPosition = 13
+        hoodieStringRightNode.strokeColor = .clear
+
         headNode.position = CGPoint(x: 0, y: baseHeadY)
         headNode.zPosition = 20
         headNode.colorBlendFactor = 1
@@ -190,6 +220,14 @@ final class CompanionSpriteScene: SKScene {
         hairNode.position = CGPoint(x: 0, y: baseHeadY + 14)
         hairNode.zPosition = 22
         hairNode.colorBlendFactor = 1
+
+        bangLeftNode.position = CGPoint(x: -14, y: baseHeadY + 6)
+        bangLeftNode.zPosition = 23
+        bangLeftNode.strokeColor = .clear
+
+        bangRightNode.position = CGPoint(x: 14, y: baseHeadY + 6)
+        bangRightNode.zPosition = 23
+        bangRightNode.strokeColor = .clear
 
         blushLeftNode.position = CGPoint(x: -14, y: baseHeadY - 3)
         blushLeftNode.zPosition = 23
@@ -213,6 +251,10 @@ final class CompanionSpriteScene: SKScene {
         mouthNode.strokeColor = .clear
         mouthNode.position = CGPoint(x: 0, y: baseHeadY - 8)
         mouthNode.zPosition = 24
+
+        expressionNode.position = CGPoint(x: 0, y: baseHeadY + 2)
+        expressionNode.zPosition = 25
+        expressionNode.alpha = 0
 
         leftFootNode.position = CGPoint(x: -16, y: baseBodyY - 44)
         leftFootNode.zPosition = 9
@@ -243,13 +285,19 @@ final class CompanionSpriteScene: SKScene {
         rootNode.addChild(rightFootNode)
         rootNode.addChild(torsoNode)
         rootNode.addChild(hoodNode)
+        rootNode.addChild(pocketNode)
+        rootNode.addChild(hoodieStringLeftNode)
+        rootNode.addChild(hoodieStringRightNode)
         rootNode.addChild(headNode)
         rootNode.addChild(hairNode)
+        rootNode.addChild(bangLeftNode)
+        rootNode.addChild(bangRightNode)
         rootNode.addChild(blushLeftNode)
         rootNode.addChild(blushRightNode)
         rootNode.addChild(leftEyeNode)
         rootNode.addChild(rightEyeNode)
         rootNode.addChild(mouthNode)
+        rootNode.addChild(expressionNode)
         rootNode.addChild(accessoryNode)
         rootNode.addChild(statusNode)
 
@@ -258,12 +306,28 @@ final class CompanionSpriteScene: SKScene {
 
     private func applyTheme(_ theme: Theme) {
         // Theme tinting keeps a pastel look while allowing distinct palettes.
-        torsoNode.color = SKColor(Color(hex: theme.primary))
-        hoodNode.color = SKColor(Color(hex: theme.primary)).withAlphaComponent(0.9)
-        headNode.color = SKColor(Color(hex: theme.secondary))
-        hairNode.color = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.9)
-        leftFootNode.color = SKColor(Color(hex: theme.surface))
-        rightFootNode.color = SKColor(Color(hex: theme.surface))
+        if !hasTorsoTexture {
+            torsoNode.color = SKColor(Color(hex: theme.primary))
+        }
+        if !hasHoodTexture {
+            hoodNode.color = SKColor(Color(hex: theme.primary)).withAlphaComponent(0.9)
+        }
+        if !hasHeadTexture {
+            headNode.color = SKColor(Color(hex: theme.secondary))
+        }
+        if !hasHairTexture {
+            hairNode.color = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.9)
+        }
+        if !hasFeetTexture {
+            leftFootNode.color = SKColor(Color(hex: theme.surface))
+            rightFootNode.color = SKColor(Color(hex: theme.surface))
+        }
+
+        pocketNode.fillColor = SKColor(Color(hex: theme.primary)).withAlphaComponent(0.66)
+        hoodieStringLeftNode.fillColor = SKColor(Color(hex: theme.surface)).withAlphaComponent(0.95)
+        hoodieStringRightNode.fillColor = SKColor(Color(hex: theme.surface)).withAlphaComponent(0.95)
+        bangLeftNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.82)
+        bangRightNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.82)
         blushLeftNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.22)
         blushRightNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.22)
         accessoryNode.fontColor = SKColor(Color(hex: theme.accent))
@@ -282,31 +346,54 @@ final class CompanionSpriteScene: SKScene {
     }
 
     private func setExpression(_ expression: Expression) {
+        let expressionName: String
         switch expression {
         case .neutral:
+            expressionName = "neutral"
             setEyeShape(width: 7, height: 7)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -4, y: -1.5, width: 8, height: 3), transform: nil)
         case .smile:
+            expressionName = "smile"
             setEyeShape(width: 7, height: 7)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -5, y: -2, width: 10, height: 5), transform: nil)
         case .happy:
+            expressionName = "happy"
             setEyeShape(width: 6.5, height: 6.5)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -5.5, y: -3, width: 11, height: 6), transform: nil)
         case .blink:
+            expressionName = "blink"
             setEyeShape(width: 4, height: 1.2)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -4, y: -1.2, width: 8, height: 2.4), transform: nil)
         case .focused:
+            expressionName = "focused"
             setEyeShape(width: 6.5, height: 6.5)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -3.4, y: -1, width: 6.8, height: 2), transform: nil)
         case .sad:
+            expressionName = "sad"
             setEyeShape(width: 6.2, height: 6.2)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -3.5, y: -0.8, width: 7, height: 1.5), transform: nil)
         case .sleep:
+            expressionName = "sleep"
             setEyeShape(width: 4, height: 1.1)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -2.2, y: -0.8, width: 4.4, height: 1.6), transform: nil)
         case .sip:
+            expressionName = "sip"
             setEyeShape(width: 6, height: 6)
             mouthNode.path = CGPath(ellipseIn: CGRect(x: -1.8, y: -1.8, width: 3.6, height: 3.6), transform: nil)
+        }
+
+        if let expressionTexture = atlasProvider.expressionTexture(expressionName) {
+            expressionNode.texture = expressionTexture
+            expressionNode.alpha = 1
+            leftEyeNode.alpha = 0
+            rightEyeNode.alpha = 0
+            mouthNode.alpha = 0
+        } else {
+            expressionNode.texture = nil
+            expressionNode.alpha = 0
+            leftEyeNode.alpha = 1
+            rightEyeNode.alpha = 1
+            mouthNode.alpha = 1
         }
     }
 
@@ -316,27 +403,38 @@ final class CompanionSpriteScene: SKScene {
     }
 
     private func applyAtlasTexturesIfAvailable() {
+        hasTorsoTexture = false
+        hasHoodTexture = false
+        hasHeadTexture = false
+        hasHairTexture = false
+        hasFeetTexture = false
+
         if let torso = atlasProvider.partTexture(part: "companion_torso", outfit: outfit) {
             torsoNode.texture = torso
-            torsoNode.colorBlendFactor = 0.35
+            torsoNode.colorBlendFactor = 0.08
+            hasTorsoTexture = true
         }
         if let hood = atlasProvider.partTexture(part: "companion_hood", outfit: outfit) {
             hoodNode.texture = hood
-            hoodNode.colorBlendFactor = 0.35
+            hoodNode.colorBlendFactor = 0.08
+            hasHoodTexture = true
         }
         if let head = atlasProvider.partTexture(part: "companion_head", outfit: outfit) {
             headNode.texture = head
-            headNode.colorBlendFactor = 0.2
+            headNode.colorBlendFactor = 0.06
+            hasHeadTexture = true
         }
         if let hair = atlasProvider.partTexture(part: "companion_hair", outfit: outfit) {
             hairNode.texture = hair
-            hairNode.colorBlendFactor = 0.45
+            hairNode.colorBlendFactor = 0.15
+            hasHairTexture = true
         }
         if let feet = atlasProvider.partTexture(part: "companion_feet", outfit: outfit) {
             leftFootNode.texture = feet
             rightFootNode.texture = feet
-            leftFootNode.colorBlendFactor = 0.25
-            rightFootNode.colorBlendFactor = 0.25
+            leftFootNode.colorBlendFactor = 0.08
+            rightFootNode.colorBlendFactor = 0.08
+            hasFeetTexture = true
         }
     }
 }
