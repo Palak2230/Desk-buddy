@@ -22,7 +22,7 @@ final class CompanionWindowController: NSWindowController {
             waterSkill: container.waterSkill,
             scale: container.coordinator.settings.characterScale
         )
-        .environment(\.appTheme, container.theme)
+        .environment(\.appTheme, container.coordinator.activeTheme)
 
         let hostingView = NSHostingView(rootView: contentView)
         hostingView.frame.size = CGSize(width: 160, height: 200)

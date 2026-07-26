@@ -1,0 +1,11 @@
+{
+  "id": "minimal",
+  "name": "Minimal",
+  "primary": "#A9A9B2",
+  "secondary": "#F3F3F6",
+  "accent": "#7B7B87",
+  "background": "#FCFCFD",
+  "surface": "#FFFFFF",
+  "text": "#2D2D33",
+  "speechBubble": "#FFFFFF"
+}

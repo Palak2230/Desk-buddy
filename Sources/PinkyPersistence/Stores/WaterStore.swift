@@ -39,6 +39,20 @@ public final class WaterStore: WaterStoreProtocol, @unchecked Sendable {
         return streak
     }
 
+    public func recentDailyCounts(days: Int) -> [Int] {
+        guard days > 0 else { return [] }
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+
+        return (0 ..< days).reversed().map { offset in
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else {
+                return 0
+            }
+            return records(for: date).count
+        }
+    }
+
     // MARK: - Private
 
     private func allRecords() -> [WaterRecord] {

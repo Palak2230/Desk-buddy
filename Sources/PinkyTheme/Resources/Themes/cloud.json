@@ -1,0 +1,11 @@
+{
+  "id": "cloud",
+  "name": "Cloud",
+  "primary": "#9CC6F3",
+  "secondary": "#EEF7FF",
+  "accent": "#5C9FE8",
+  "background": "#F7FBFF",
+  "surface": "#FFFFFF",
+  "text": "#2E4860",
+  "speechBubble": "#FFFFFF"
+}

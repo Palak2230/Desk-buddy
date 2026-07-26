@@ -1,13 +1,18 @@
 import SwiftUI
 import Domain
 import Services
+import Theme
 
 /// Application settings panel.
 public struct SettingsView: View {
     @ObservedObject private var coordinator: AppCoordinator
+    private let availableThemes: [Theme]
 
     public init(coordinator: AppCoordinator) {
         self.coordinator = coordinator
+        self.availableThemes = ThemeLoader.shared
+            .allThemes()
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     public var body: some View {
@@ -31,7 +36,9 @@ public struct SettingsView: View {
 
             Section("Theme") {
                 Picker("Theme", selection: binding(\.themeID)) {
-                    Text("Strawberry Milk").tag("strawberry-milk")
+                    ForEach(availableThemes) { theme in
+                        Text(theme.name).tag(theme.id)
+                    }
                 }
             }
 
@@ -39,6 +46,9 @@ public struct SettingsView: View {
                 Toggle("Launch at Login", isOn: binding(\.launchAtLogin))
                 Slider(value: binding(\.volume), in: 0 ... 1) {
                     Text("Volume")
+                }
+                Slider(value: binding(\.speechSpeed), in: 0.5 ... 2.0) {
+                    Text("Speech Speed")
                 }
             }
         }

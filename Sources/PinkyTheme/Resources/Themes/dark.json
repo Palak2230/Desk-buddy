@@ -1,0 +1,11 @@
+{
+  "id": "dark",
+  "name": "Dark",
+  "primary": "#6D5A8D",
+  "secondary": "#3A3348",
+  "accent": "#B889FF",
+  "background": "#1D1A25",
+  "surface": "#2A2536",
+  "text": "#F3ECFF",
+  "speechBubble": "#3A3348"
+}

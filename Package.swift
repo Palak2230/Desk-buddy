@@ -73,6 +73,7 @@ let package = Package(
                 "Domain",
                 "Persistence",
                 "Notifications",
+                "Theme",
             ],
             path: "Sources/PinkyServices"
         ),

@@ -1,0 +1,11 @@
+{
+  "id": "lavender",
+  "name": "Lavender",
+  "primary": "#BFA7F2",
+  "secondary": "#F2ECFF",
+  "accent": "#8F75E6",
+  "background": "#FAF7FF",
+  "surface": "#FFFFFF",
+  "text": "#3D325A",
+  "speechBubble": "#FFFFFF"
+}

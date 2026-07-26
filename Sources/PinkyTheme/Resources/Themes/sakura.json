@@ -1,0 +1,11 @@
+{
+  "id": "sakura",
+  "name": "Sakura",
+  "primary": "#F6A5C0",
+  "secondary": "#FFE8F1",
+  "accent": "#E96AA2",
+  "background": "#FFF7FB",
+  "surface": "#FFFFFF",
+  "text": "#4A2E3F",
+  "speechBubble": "#FFFFFF"
+}

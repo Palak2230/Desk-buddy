@@ -86,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openDashboard() {
         if dashboardWindow == nil {
             let view = DashboardView(coordinator: container.coordinator)
-                .environment(\.appTheme, container.theme)
+                .environment(\.appTheme, container.coordinator.activeTheme)
 
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)
@@ -104,7 +104,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openSettings() {
         if settingsWindow == nil {
             let view = SettingsView(coordinator: container.coordinator)
-                .environment(\.appTheme, container.theme)
+                .environment(\.appTheme, container.coordinator.activeTheme)
 
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)

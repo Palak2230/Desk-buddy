@@ -6,4 +6,5 @@ public protocol WaterStoreProtocol: Sendable {
     func addRecord(_ record: WaterRecord)
     func todayCount() -> Int
     func currentStreak() -> Int
+    func recentDailyCounts(days: Int) -> [Int]
 }
