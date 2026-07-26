@@ -1,7 +1,7 @@
 import Foundation
 import Combine
-import PinkyDomain
-import PinkyPersistence
+import Domain
+import Persistence
 
 /// Central application coordinator wiring stores and services together.
 @MainActor

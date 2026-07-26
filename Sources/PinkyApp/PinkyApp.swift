@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct PinkyApp: App {
+struct DeskBuddyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {

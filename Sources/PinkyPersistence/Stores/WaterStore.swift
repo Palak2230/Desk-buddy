@@ -1,10 +1,10 @@
 import Foundation
-import PinkyDomain
+import Domain
 
 /// UserDefaults-backed water intake persistence.
 public final class WaterStore: WaterStoreProtocol, @unchecked Sendable {
     private let defaults: UserDefaults
-    private let key = "com.pinky.water.records"
+    private let key = "com.palakagarwal.deskbuddy.water.records"
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

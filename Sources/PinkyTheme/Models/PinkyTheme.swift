@@ -1,7 +1,7 @@
 import Foundation
 
 /// JSON-driven theme definition loaded from bundle resources.
-public struct PinkyTheme: Codable, Sendable, Identifiable, Equatable {
+public struct Theme: Codable, Sendable, Identifiable, Equatable {
     public let id: String
     public let name: String
     public let primary: String

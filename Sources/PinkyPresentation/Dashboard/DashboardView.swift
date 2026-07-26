@@ -1,12 +1,12 @@
 import SwiftUI
-import PinkyCore
-import PinkyTheme
-import PinkyUI
-import PinkyServices
+import Core
+import Theme
+import UI
+import Services
 
 /// Glassmorphism dashboard showing water stats and streaks.
 public struct DashboardView: View {
-    @Environment(\.pinkyTheme) private var theme
+    @Environment(\.appTheme) private var theme
     @ObservedObject private var coordinator: AppCoordinator
 
     public init(coordinator: AppCoordinator) {
@@ -30,7 +30,7 @@ public struct DashboardView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Pinky Dashboard")
+                Text("Desk Buddy Dashboard")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(hex: theme.text))
                 Text("Your wellness companion ✨")

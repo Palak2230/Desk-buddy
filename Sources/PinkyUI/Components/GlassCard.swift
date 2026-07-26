@@ -1,10 +1,9 @@
 import SwiftUI
-import PinkyCore
-import PinkyTheme
+import Core
 
 /// Glassmorphism card container used across dashboard and settings.
 public struct GlassCard<Content: View>: View {
-    @Environment(\.pinkyTheme) private var theme
+    @Environment(\.appTheme) private var theme
     private let content: Content
 
     public init(@ViewBuilder content: () -> Content) {

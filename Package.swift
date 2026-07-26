@@ -1,29 +1,27 @@
 // swift-tools-version: 5.9
-// Pinky — Aesthetic macOS desktop companion
-// https://github.com/palak/pinky
 
 import PackageDescription
 
 let package = Package(
-    name: "Pinky",
+    name: "DeskBuddy",
     platforms: [
-        .macOS(.v13),
+        .macOS(.v14),
     ],
     products: [
         .executable(
-            name: "Pinky",
-            targets: ["PinkyApp"]
+            name: "DeskBuddy",
+            targets: ["DeskBuddyApp"]
         ),
     ],
     targets: [
         // MARK: - Application Entry Point
 
         .executableTarget(
-            name: "PinkyApp",
+            name: "DeskBuddyApp",
             dependencies: [
-                "PinkyCore",
-                "PinkyPresentation",
-                "PinkyServices",
+                "Core",
+                "Presentation",
+                "Services",
             ],
             path: "Sources/PinkyApp"
         ),
@@ -31,24 +29,25 @@ let package = Package(
         // MARK: - Presentation Layer
 
         .target(
-            name: "PinkyPresentation",
+            name: "Presentation",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
-                "PinkyUI",
-                "PinkyCharacter",
-                "PinkySkills",
-                "PinkyTheme",
+                "Core",
+                "Domain",
+                "UI",
+                "Character",
+                "Skills",
+                "Theme",
+                "Services",
             ],
             path: "Sources/PinkyPresentation"
         ),
 
         .target(
-            name: "PinkyUI",
+            name: "UI",
             dependencies: [
-                "PinkyCore",
-                "PinkyTheme",
-                "PinkyCharacter",
+                "Core",
+                "Theme",
+                "Character",
             ],
             path: "Sources/PinkyUI"
         ),
@@ -56,9 +55,9 @@ let package = Package(
         // MARK: - Domain Layer
 
         .target(
-            name: "PinkyDomain",
+            name: "Domain",
             dependencies: [
-                "PinkyCore",
+                "Core",
             ],
             path: "Sources/PinkyDomain"
         ),
@@ -66,30 +65,30 @@ let package = Package(
         // MARK: - Services Layer
 
         .target(
-            name: "PinkyServices",
+            name: "Services",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
-                "PinkyPersistence",
-                "PinkyNotifications",
+                "Core",
+                "Domain",
+                "Persistence",
+                "Notifications",
             ],
             path: "Sources/PinkyServices"
         ),
 
         .target(
-            name: "PinkyPersistence",
+            name: "Persistence",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
+                "Core",
+                "Domain",
             ],
             path: "Sources/PinkyPersistence"
         ),
 
         .target(
-            name: "PinkyNotifications",
+            name: "Notifications",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
+                "Core",
+                "Domain",
             ],
             path: "Sources/PinkyNotifications"
         ),
@@ -97,12 +96,12 @@ let package = Package(
         // MARK: - Skills (Plugin System)
 
         .target(
-            name: "PinkySkills",
+            name: "Skills",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
-                "PinkyCharacter",
-                "PinkyAnimations",
+                "Core",
+                "Domain",
+                "Character",
+                "Animations",
             ],
             path: "Sources/PinkySkills"
         ),
@@ -110,11 +109,11 @@ let package = Package(
         // MARK: - Character Engine
 
         .target(
-            name: "PinkyCharacter",
+            name: "Character",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
-                "PinkyAnimations",
+                "Core",
+                "Domain",
+                "Animations",
             ],
             path: "Sources/PinkyCharacter"
         ),
@@ -122,9 +121,9 @@ let package = Package(
         // MARK: - Animation Engine
 
         .target(
-            name: "PinkyAnimations",
+            name: "Animations",
             dependencies: [
-                "PinkyCore",
+                "Core",
             ],
             path: "Sources/PinkyAnimations"
         ),
@@ -132,9 +131,9 @@ let package = Package(
         // MARK: - Theme Engine
 
         .target(
-            name: "PinkyTheme",
+            name: "Theme",
             dependencies: [
-                "PinkyCore",
+                "Core",
             ],
             path: "Sources/PinkyTheme",
             resources: [
@@ -145,7 +144,7 @@ let package = Package(
         // MARK: - Core (Shared Utilities)
 
         .target(
-            name: "PinkyCore",
+            name: "Core",
             dependencies: [],
             path: "Sources/PinkyCore"
         ),
@@ -153,12 +152,12 @@ let package = Package(
         // MARK: - Tests
 
         .testTarget(
-            name: "PinkyTests",
+            name: "DeskBuddyTests",
             dependencies: [
-                "PinkyCore",
-                "PinkyDomain",
-                "PinkyTheme",
-                "PinkyAnimations",
+                "Core",
+                "Domain",
+                "Theme",
+                "Animations",
             ],
             path: "Tests/PinkyTests"
         ),

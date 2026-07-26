@@ -1,9 +1,9 @@
 import XCTest
-@testable import PinkyCore
-@testable import PinkyDomain
-@testable import PinkyTheme
+@testable import Core
+@testable import Domain
+@testable import Theme
 
-final class PinkyCoreTests: XCTestCase {
+final class CoreTests: XCTestCase {
     func testDefaultSettings() {
         let settings = AppSettings.default
         XCTAssertEqual(settings.reminderIntervalMinutes, 60)

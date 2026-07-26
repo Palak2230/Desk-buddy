@@ -1,11 +1,11 @@
 import Foundation
-import PinkyCore
-import PinkyDomain
-import PinkyCharacter
+import Core
+import Domain
+import Character
 
-/// Water Reminder — the first built-in Pinky skill.
+/// Water Reminder — the first built-in Desk Buddy skill.
 @MainActor
-public final class WaterReminderSkill: PinkySkill, ObservableObject {
+public final class WaterReminderSkill: Skill, ObservableObject {
     public let id = "water"
     public let displayName = "Water Reminder"
     public let iconName = "drop.fill"
@@ -22,7 +22,7 @@ public final class WaterReminderSkill: PinkySkill, ObservableObject {
     }
 
     public func activate() async {
-        PinkyLogger.log("WaterSkill", "Water Reminder skill activated")
+        AppLogger.log("WaterSkill", "Water Reminder skill activated")
     }
 
     public func deactivate() async {

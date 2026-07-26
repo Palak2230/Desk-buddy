@@ -1,5 +1,5 @@
 import Foundation
-import PinkyCore
+import Core
 
 /// Loads and caches JSON theme definitions from bundled resources.
 public final class ThemeLoader: Sendable {
@@ -11,21 +11,21 @@ public final class ThemeLoader: Sendable {
         self.bundle = bundle ?? Bundle.module
     }
 
-    public func loadTheme(id: String) -> PinkyTheme? {
+    public func loadTheme(id: String) -> Theme? {
         guard let url = bundle.url(forResource: id, withExtension: "json", subdirectory: "Themes") else {
             return Self.fallbackTheme
         }
 
         do {
             let data = try Data(contentsOf: url)
-            return try JSONDecoder().decode(PinkyTheme.self, from: data)
+            return try JSONDecoder().decode(Theme.self, from: data)
         } catch {
-            PinkyLogger.log("ThemeLoader", "Failed to load theme \(id): \(error)")
+            AppLogger.log("ThemeLoader", "Failed to load theme \(id): \(error)")
             return Self.fallbackTheme
         }
     }
 
-    public func allThemes() -> [PinkyTheme] {
+    public func allThemes() -> [Theme] {
         guard let themesURL = bundle.url(forResource: "Themes", withExtension: nil) else {
             return [Self.fallbackTheme]
         }
@@ -37,13 +37,13 @@ public final class ThemeLoader: Sendable {
 
         return files
             .filter { $0.pathExtension == "json" }
-            .compactMap { url -> PinkyTheme? in
+            .compactMap { url -> Theme? in
                 guard let data = try? Data(contentsOf: url) else { return nil }
-                return try? JSONDecoder().decode(PinkyTheme.self, from: data)
+                return try? JSONDecoder().decode(Theme.self, from: data)
             }
     }
 
-    public static let fallbackTheme = PinkyTheme(
+    public static let fallbackTheme = Theme(
         id: "strawberry-milk",
         name: "Strawberry Milk",
         primary: "#FFB6C1",

@@ -1,10 +1,10 @@
 import Foundation
-import PinkyDomain
+import Domain
 
 /// UserDefaults-backed settings persistence.
 public final class SettingsStore: SettingsStoreProtocol, @unchecked Sendable {
     private let defaults: UserDefaults
-    private let key = "com.pinky.settings"
+    private let key = "com.palakagarwal.deskbuddy.settings"
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

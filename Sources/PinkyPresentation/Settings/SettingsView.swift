@@ -1,8 +1,6 @@
 import SwiftUI
-import PinkyCore
-import PinkyDomain
-import PinkyTheme
-import PinkyServices
+import Domain
+import Services
 
 /// Application settings panel.
 public struct SettingsView: View {

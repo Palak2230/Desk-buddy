@@ -1,16 +1,16 @@
 import SwiftUI
-import PinkyCore
-import PinkyTheme
-import PinkyCharacter
-import PinkyDomain
+import Core
+import Theme
+import Character
+import Domain
 
-/// Environment key for injecting the active Pinky theme.
+/// Environment key for injecting the active app theme.
 private struct ThemeEnvironmentKey: EnvironmentKey {
-    static let defaultValue: PinkyTheme = ThemeLoader.fallbackTheme
+    static let defaultValue: Theme = ThemeLoader.fallbackTheme
 }
 
 public extension EnvironmentValues {
-    var pinkyTheme: PinkyTheme {
+    var appTheme: Theme {
         get { self[ThemeEnvironmentKey.self] }
         set { self[ThemeEnvironmentKey.self] = newValue }
     }

@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
-import PinkyPresentation
-import PinkyNotifications
+import Presentation
+import Notifications
 
 /// Application delegate handling lifecycle, windows, and menu bar setup.
 @MainActor
@@ -14,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuRefreshTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Hide dock icon — Pinky lives in the menu bar and on the desktop
+        // Hide dock icon — Desk Buddy lives in menu bar and on desktop
         NSApp.setActivationPolicy(.accessory)
 
         container = DependencyContainer()
@@ -43,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "heart.fill", accessibilityDescription: "Pinky")
+            button.image = NSImage(systemSymbolName: "heart.fill", accessibilityDescription: "Desk Buddy")
             button.image?.isTemplate = true
         }
 
@@ -55,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(makeMenuItem(title: "Settings", action: #selector(openSettings)))
         menu.addItem(makeMenuItem(title: "Test Water Reminder", action: #selector(testReminder)))
         menu.addItem(.separator())
-        menu.addItem(makeMenuItem(title: "Quit Pinky", action: #selector(quit)))
+        menu.addItem(makeMenuItem(title: "Quit Desk Buddy", action: #selector(quit)))
 
         statusItem.menu = menu
         statusMenu = menu
@@ -86,11 +86,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openDashboard() {
         if dashboardWindow == nil {
             let view = DashboardView(coordinator: container.coordinator)
-                .environment(\.pinkyTheme, container.theme)
+                .environment(\.appTheme, container.theme)
 
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)
-            window.title = "Pinky Dashboard"
+            window.title = "Desk Buddy Dashboard"
             window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
             window.setContentSize(NSSize(width: 520, height: 400))
             window.center()
@@ -104,11 +104,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openSettings() {
         if settingsWindow == nil {
             let view = SettingsView(coordinator: container.coordinator)
-                .environment(\.pinkyTheme, container.theme)
+                .environment(\.appTheme, container.theme)
 
             let hosting = NSHostingController(rootView: view)
             let window = NSWindow(contentViewController: hosting)
-            window.title = "Pinky Settings"
+            window.title = "Desk Buddy Settings"
             window.styleMask = [.titled, .closable]
             window.setContentSize(NSSize(width: 440, height: 400))
             window.center()

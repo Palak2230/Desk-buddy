@@ -1,9 +1,9 @@
 import Foundation
 import os.log
 
-/// Lightweight logging utility for Pinky modules.
-public enum PinkyLogger {
-    private static let subsystem = "com.pinky.app"
+/// Lightweight logging utility for Desk Buddy modules.
+public enum AppLogger {
+    private static let subsystem = "com.palakagarwal.deskbuddy"
 
     public static func log(_ category: String, _ message: String) {
         #if DEBUG

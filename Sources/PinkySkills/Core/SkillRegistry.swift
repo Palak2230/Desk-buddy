@@ -1,18 +1,18 @@
 import Foundation
-import PinkyCore
-import PinkyDomain
+import Core
+import Domain
 
 /// Registry and lifecycle manager for installable skills.
 @MainActor
 public final class SkillRegistry: ObservableObject {
-    @Published public private(set) var activeSkills: [String: PinkySkill] = [:]
+    @Published public private(set) var activeSkills: [String: Skill] = [:]
 
     public init() {}
 
-    public func register(_ skill: PinkySkill) async {
+    public func register(_ skill: Skill) async {
         activeSkills[skill.id] = skill
         await skill.activate()
-        PinkyLogger.log("Skills", "Registered skill: \(skill.displayName)")
+        AppLogger.log("Skills", "Registered skill: \(skill.displayName)")
     }
 
     public func unregister(id: String) async {
@@ -20,7 +20,7 @@ public final class SkillRegistry: ObservableObject {
         await skill.deactivate()
     }
 
-    public func skill(id: String) -> PinkySkill? {
+    public func skill(id: String) -> Skill? {
         activeSkills[id]
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 import Combine
-import PinkyDomain
+import Domain
 
 /// Reusable finite state machine for companion character behaviour.
 @MainActor

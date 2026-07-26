@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
-import PinkyPresentation
-import PinkyTheme
+import Presentation
 
 /// Manages the floating companion window using AppKit for precise desktop positioning.
 @MainActor
@@ -16,7 +15,7 @@ final class CompanionWindowController: NSWindowController {
             waterSkill: container.waterSkill,
             scale: container.coordinator.settings.characterScale
         )
-        .environment(\.pinkyTheme, container.theme)
+        .environment(\.appTheme, container.theme)
 
         let hostingView = NSHostingView(rootView: contentView)
         hostingView.frame.size = CGSize(width: 160, height: 200)

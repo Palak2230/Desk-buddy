@@ -1,13 +1,13 @@
 import SwiftUI
-import PinkyTheme
-import PinkyUI
-import PinkyServices
-import PinkyCharacter
-import PinkySkills
+import Theme
+import UI
+import Services
+import Character
+import Skills
 
 /// Main companion window content — character + optional speech bubble.
 public struct CompanionWindowView: View {
-    @Environment(\.pinkyTheme) private var theme
+    @Environment(\.appTheme) private var theme
     @ObservedObject private var stateMachine: CharacterStateMachine
     @ObservedObject private var waterSkill: WaterReminderSkill
     private let scale: Double

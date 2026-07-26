@@ -1,8 +1,8 @@
-# Pinky
+# Desk Buddy
 
 **An aesthetic desktop companion that lives on your Mac and helps you build healthy habits.**
 
-Pinky is a free, offline, open-source macOS desktop companion with a pastel coquette aesthetic. She lives on your desktop, performs idle animations, and reminds you to stay healthy — starting with water intake tracking.
+Desk Buddy is a free, offline, open-source macOS desktop companion with a pastel coquette aesthetic. She lives on your desktop, performs idle animations, and reminds you to stay healthy — starting with water intake tracking.
 
 ## Features (Milestone 1)
 
@@ -18,37 +18,37 @@ Pinky is a free, offline, open-source macOS desktop companion with a pastel coqu
 
 ## Requirements
 
-- macOS 13.0 (Ventura) or later
+- macOS 14.0 (Sonoma) or later
 - Xcode 15+ or Swift 5.9+ toolchain
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/pinky.git
-cd pinky
+git clone https://github.com/Palak2230/Desk-buddy.git
+cd Desk-buddy
 swift build
-swift run Pinky
+swift run DeskBuddy
 ```
 
 See [docs/Installation.md](docs/Installation.md) for detailed setup.
 
 ## Architecture
 
-Pinky uses **Clean Architecture** with strict layer separation:
+Desk Buddy uses **Clean Architecture** with strict layer separation:
 
 ```
-PinkyApp          → Application entry point, DI, window management
-PinkyPresentation → Views, ViewModels, menu bar
-PinkyUI           → Reusable UI components (glass cards, speech bubbles)
-PinkyDomain       → Models, protocols, use cases
-PinkyServices     → App coordinator, business logic
-PinkySkills       → Plugin system + built-in skills (Water)
-PinkyCharacter    → Character state machine
-PinkyAnimations   → Frame-based animation engine
-PinkyTheme        → JSON theme loader
-PinkyPersistence  → Local storage (UserDefaults)
-PinkyNotifications→ Local UNUserNotificationCenter wrapper
-PinkyCore         → Shared utilities, extensions, logging
+DeskBuddyApp  → Application entry point, DI, window management
+Presentation  → Views, ViewModels, menu bar
+UI            → Reusable UI components (glass cards, speech bubbles)
+Domain        → Models, protocols, use cases
+Services      → App coordinator, business logic
+Skills        → Plugin system + built-in skills (Water)
+Character     → Character state machine
+Animations    → Frame-based animation engine
+Theme         → JSON theme loader
+Persistence   → Local storage (UserDefaults)
+Notifications → Local UNUserNotificationCenter wrapper
+Core          → Shared utilities, extensions, logging
 ```
 
 See [docs/Architecture.md](docs/Architecture.md) for full details.

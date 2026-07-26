@@ -1,7 +1,7 @@
 import Foundation
 
-/// Contract every Pinky skill (feature plugin) must implement.
-public protocol PinkySkill: AnyObject, Sendable {
+/// Contract every skill (feature plugin) must implement.
+public protocol Skill: AnyObject, Sendable {
     /// Unique identifier for the skill (e.g. `"water"`).
     var id: String { get }
 

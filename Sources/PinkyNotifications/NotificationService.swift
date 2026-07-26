@@ -1,6 +1,6 @@
 import Foundation
 import UserNotifications
-import PinkyCore
+import Core
 
 /// Wraps `UNUserNotificationCenter` for local offline notifications.
 public final class NotificationService: @unchecked Sendable {
@@ -14,14 +14,14 @@ public final class NotificationService: @unchecked Sendable {
         do {
             return try await center.requestAuthorization(options: [.alert, .sound, .badge])
         } catch {
-            PinkyLogger.log("Notifications", "Authorization failed: \(error)")
+            AppLogger.log("Notifications", "Authorization failed: \(error)")
             return false
         }
     }
 
     public func scheduleWaterReminder(afterMinutes minutes: Int) {
         let content = UNMutableNotificationContent()
-        content.title = "Pinky"
+        content.title = "Desk Buddy"
         content.body = "Did you drink water? 💧"
         content.sound = .default
 

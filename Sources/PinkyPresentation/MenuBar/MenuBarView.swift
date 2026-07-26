@@ -1,8 +1,7 @@
 import SwiftUI
-import PinkyTheme
-import PinkyServices
+import Services
 
-/// Native menu bar extra for quick access to Pinky features.
+/// Native menu bar extra for quick access to Desk Buddy features.
 public struct MenuBarView: View {
     @ObservedObject private var coordinator: AppCoordinator
     private let onOpenDashboard: () -> Void
@@ -34,7 +33,7 @@ public struct MenuBarView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
             Divider()
-            Button("Quit Pinky") { NSApplication.shared.terminate(nil) }
+            Button("Quit Desk Buddy") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
@@ -45,10 +44,10 @@ public struct MenuBarView: View {
 
     private var header: some View {
         HStack {
-            Text("Pinky")
+            Text("Desk Buddy")
                 .font(.system(size: 14, weight: .bold, design: .rounded))
             Spacer()
-            Text("🌸")
+            Text("💧")
         }
         .padding(.horizontal, 12)
         .padding(.bottom, 6)

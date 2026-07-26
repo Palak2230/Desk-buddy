@@ -1,17 +1,17 @@
 import Foundation
-import PinkyServices
-import PinkyCharacter
-import PinkySkills
-import PinkyTheme
+import Services
+import Character
+import Skills
+import Theme
 
-/// Root dependency injection container for the Pinky application.
+/// Root dependency injection container for the Desk Buddy application.
 @MainActor
 public final class DependencyContainer: ObservableObject {
     public let coordinator: AppCoordinator
     public let stateMachine: CharacterStateMachine
     public let skillRegistry: SkillRegistry
     public let waterSkill: WaterReminderSkill
-    public let theme: PinkyTheme
+    public let theme: Theme
 
     public init() {
         let coordinator = AppCoordinator()

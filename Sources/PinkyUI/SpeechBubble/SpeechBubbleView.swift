@@ -1,10 +1,9 @@
 import SwiftUI
-import PinkyCore
-import PinkyTheme
+import Core
 
 /// Speech bubble attached to the companion character.
 public struct SpeechBubbleView: View {
-    @Environment(\.pinkyTheme) private var theme
+    @Environment(\.appTheme) private var theme
 
     public let message: String
     public let primaryAction: (title: String, action: () -> Void)?
