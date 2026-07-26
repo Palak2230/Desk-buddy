@@ -13,6 +13,7 @@ final class CompanionAtlasProvider {
 
     private let atlases: [SKTextureAtlas]
     private static let atlasNames = [
+        "CompanionFrames",
         "CompanionBase",
         "CompanionExpressions",
         "CompanionOutfits",

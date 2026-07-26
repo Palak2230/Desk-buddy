@@ -44,25 +44,15 @@ final class CompanionWindowController: NSWindowController {
         panel.hasShadow = false
         panel.isMovableByWindowBackground = true
 
-        let x = defaults.double(forKey: Keys.originX)
-        let y = defaults.double(forKey: Keys.originY)
-        let homePosition: NSPoint
-        if x > 0, y > 0 {
-            homePosition = NSPoint(x: x, y: y)
-        } else if let screen = NSScreen.main {
-            let screenFrame = screen.visibleFrame
-            homePosition = NSPoint(x: screenFrame.maxX - 180, y: screenFrame.minY + 20)
-        } else {
-            homePosition = NSPoint(x: 20, y: 20)
-        }
+        let storedX = defaults.double(forKey: Keys.originX)
+        let storedY = defaults.double(forKey: Keys.originY)
+        let homePosition = Self.normalizedHomePosition(
+            stored: NSPoint(x: storedX, y: storedY),
+            panelSize: panel.frame.size
+        )
 
-        // Start just outside the right screen edge, then walk to home.
-        if let screen = NSScreen.main {
-            let screenFrame = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(x: screenFrame.maxX + 8, y: homePosition.y))
-        } else {
-            panel.setFrameOrigin(homePosition)
-        }
+        // Start slightly right of home, then walk in (no teleport pop-in).
+        panel.setFrameOrigin(NSPoint(x: homePosition.x + panel.frame.width + 20, y: homePosition.y))
 
         super.init(window: panel)
         movementController = CompanionMovementController(
@@ -110,5 +100,30 @@ final class CompanionWindowController: NSWindowController {
                 movementController?.updateHomePosition(origin)
             }
         }
+    }
+
+    private static func normalizedHomePosition(stored: NSPoint, panelSize: NSSize) -> NSPoint {
+        let candidate: NSPoint
+        if stored.x > 0, stored.y > 0 {
+            candidate = stored
+        } else if let main = NSScreen.main?.visibleFrame {
+            candidate = NSPoint(x: main.maxX - panelSize.width - 20, y: main.minY + 20)
+        } else {
+            candidate = NSPoint(x: 20, y: 20)
+        }
+
+        let availableFrames = NSScreen.screens.map(\.visibleFrame)
+        guard let frame = availableFrames.first(where: { frame in
+            candidate.x >= frame.minX - 40 &&
+                candidate.x <= frame.maxX + 40 &&
+                candidate.y >= frame.minY - 40 &&
+                candidate.y <= frame.maxY + 40
+        }) ?? NSScreen.main?.visibleFrame else {
+            return candidate
+        }
+
+        let clampedX = min(max(candidate.x, frame.minX + 8), frame.maxX - panelSize.width - 8)
+        let clampedY = min(max(candidate.y, frame.minY + 8), frame.maxY - panelSize.height - 8)
+        return NSPoint(x: clampedX, y: clampedY)
     }
 }
