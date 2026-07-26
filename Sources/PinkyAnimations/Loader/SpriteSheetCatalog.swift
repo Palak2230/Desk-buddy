@@ -29,7 +29,7 @@ public final class SpriteSheetCatalog: Sendable {
                 return AnimationClip(
                     id: clip.id,
                     frames: frames,
-                    loops: clip.loops,
+                    playbackMode: clip.resolvedPlaybackMode,
                     priority: clip.priority
                 )
             }

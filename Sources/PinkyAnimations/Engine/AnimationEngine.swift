@@ -11,6 +11,7 @@ public final class AnimationEngine: ObservableObject {
     private var queue: [AnimationClip] = []
     private var timer: Timer?
     private var onComplete: (() -> Void)?
+    private var playbackDirection: Int = 1
 
     public init() {}
 
@@ -39,6 +40,7 @@ public final class AnimationEngine: ObservableObject {
         stopTimer()
         currentClipID = clip.id
         currentFrameIndex = 0
+        playbackDirection = 1
         self.onComplete = onComplete
         scheduleNextFrame(for: clip)
     }
@@ -47,6 +49,7 @@ public final class AnimationEngine: ObservableObject {
         stopTimer()
         currentClipID = nil
         currentFrameIndex = 0
+        playbackDirection = 1
         onComplete = nil
         queue.removeAll()
     }
@@ -70,17 +73,52 @@ public final class AnimationEngine: ObservableObject {
     }
 
     private func advanceFrame(in clip: AnimationClip) {
+        if clip.playbackMode == .pingPong {
+            advancePingPongFrame(in: clip)
+            return
+        }
+
         currentFrameIndex += 1
 
-        if currentFrameIndex >= clip.frames.count {
-            finishClip(clip)
-        } else {
+        if currentFrameIndex < clip.frames.count {
             scheduleNextFrame(for: clip)
+            return
         }
+
+        finishClip(clip)
+    }
+
+    private func advancePingPongFrame(in clip: AnimationClip) {
+        guard clip.frames.count > 1 else {
+            scheduleNextFrame(for: clip)
+            return
+        }
+
+        let candidate = currentFrameIndex + playbackDirection
+        if candidate >= clip.frames.count {
+            playbackDirection = -1
+            currentFrameIndex = clip.frames.count - 2
+            scheduleNextFrame(for: clip)
+            return
+        }
+        if candidate < 0 {
+            playbackDirection = 1
+            currentFrameIndex = 1
+            scheduleNextFrame(for: clip)
+            return
+        }
+
+        currentFrameIndex = candidate
+        scheduleNextFrame(for: clip)
     }
 
     private func finishClip(_ clip: AnimationClip) {
-        if clip.loops {
+        if clip.playbackMode == .loop {
+            currentFrameIndex = 0
+            playbackDirection = 1
+            scheduleNextFrame(for: clip)
+        } else if clip.playbackMode == .pingPong {
+            playbackDirection = 1
             currentFrameIndex = 0
             scheduleNextFrame(for: clip)
         } else {

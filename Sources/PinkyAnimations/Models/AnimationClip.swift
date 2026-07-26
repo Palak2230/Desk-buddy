@@ -1,5 +1,12 @@
 import Foundation
 
+/// Playback policy for animation clips.
+public enum AnimationPlaybackMode: String, Codable, Sendable {
+    case loop
+    case once
+    case pingPong
+}
+
 /// A single frame in a sprite animation sequence.
 public struct AnimationFrame: Sendable, Equatable {
     public let textureName: String
@@ -15,18 +22,42 @@ public struct AnimationFrame: Sendable, Equatable {
 public struct AnimationClip: Sendable, Identifiable {
     public let id: String
     public let frames: [AnimationFrame]
-    public let loops: Bool
+    public let playbackMode: AnimationPlaybackMode
     public let priority: Int
+    
+    /// Backward-compatible convenience for existing call sites.
+    public var loops: Bool {
+        switch playbackMode {
+        case .loop, .pingPong:
+            return true
+        case .once:
+            return false
+        }
+    }
 
     public init(
         id: String,
         frames: [AnimationFrame],
-        loops: Bool = true,
+        playbackMode: AnimationPlaybackMode = .loop,
         priority: Int = 0
     ) {
         self.id = id
         self.frames = frames
-        self.loops = loops
+        self.playbackMode = playbackMode
         self.priority = priority
+    }
+
+    public init(
+        id: String,
+        frames: [AnimationFrame],
+        loops: Bool,
+        priority: Int = 0
+    ) {
+        self.init(
+            id: id,
+            frames: frames,
+            playbackMode: loops ? .loop : .once,
+            priority: priority
+        )
     }
 }

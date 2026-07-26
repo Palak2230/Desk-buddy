@@ -148,16 +148,12 @@ final class CompanionAtlasProvider {
                 let relativePath = fileURL.path.replacingOccurrences(of: baseDirectory.path, with: "")
                 let lowerRelativePath = relativePath.lowercased()
 
-                var stateKey: String?
-                if let markerRange = lowerRelativePath.range(of: "/character/") {
-                    let suffix = lowerRelativePath[markerRange.upperBound...]
-                    let stateFolder = suffix.split(separator: "/").first.map(String.init)
-                    stateKey = stateFolder?.lowercased()
-                } else {
-                    stateKey = parsedStateName(fromStem: stem)
-                }
-
-                guard let key = stateKey, validStates.contains(key) else { continue }
+                guard let markerRange = lowerRelativePath.range(of: "/character/") else { continue }
+                let suffix = lowerRelativePath[markerRange.upperBound...]
+                guard let stateFolder = suffix.split(separator: "/").first.map(String.init) else { continue }
+                let key = stateFolder.lowercased()
+                guard validStates.contains(key) else { continue }
+                guard isValidCharacterFrameName(stem: stem.lowercased(), state: key) else { continue }
                 let frameNumber = parsedFrameIndex(fromStem: stem)
                 grouped[key, default: []].append((frameNumber, stem, fileURL))
             }
@@ -188,17 +184,20 @@ final class CompanionAtlasProvider {
         return Array(unique.values)
     }()
 
-    private static func parsedStateName(fromStem stem: String) -> String? {
-        let lower = stem.lowercased()
-        guard let underscore = lower.firstIndex(of: "_") else { return nil }
-        return String(lower[..<underscore])
-    }
-
     private static func parsedFrameIndex(fromStem stem: String) -> Int {
         let digits = stem.reversed().prefix { $0.isNumber }.reversed()
         if let index = Int(String(digits)) {
             return index
         }
         return Int.max / 4
+    }
+
+    /// Accept only artist-frame names like `idle_01.png` in `Character/Idle/`.
+    private static func isValidCharacterFrameName(stem: String, state: String) -> Bool {
+        let prefix = "\(state)_"
+        guard stem.hasPrefix(prefix) else { return false }
+        let suffix = String(stem.dropFirst(prefix.count))
+        guard !suffix.isEmpty else { return false }
+        return suffix.allSatisfy { $0.isNumber }
     }
 }

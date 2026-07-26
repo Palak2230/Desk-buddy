@@ -1,20 +1,20 @@
 {
   "id": "deskbuddy-default",
   "clips": [
-    { "id": "idle", "frameCount": 24, "frameDuration": 0.055, "loops": true, "priority": 10 },
-    { "id": "turn", "frameCount": 10, "frameDuration": 0.045, "loops": false, "priority": 40 },
-    { "id": "stop", "frameCount": 8, "frameDuration": 0.05, "loops": false, "priority": 40 },
-    { "id": "blink", "frameCount": 6, "frameDuration": 0.042, "loops": false, "priority": 40 },
-    { "id": "breathing", "frameCount": 20, "frameDuration": 0.06, "loops": true, "priority": 10 },
-    { "id": "walk", "frameCount": 16, "frameDuration": 0.05, "loops": true, "priority": 60 },
-    { "id": "run", "frameCount": 14, "frameDuration": 0.036, "loops": true, "priority": 60 },
-    { "id": "wave", "frameCount": 12, "frameDuration": 0.05, "loops": false, "priority": 100 },
-    { "id": "drink", "frameCount": 12, "frameDuration": 0.055, "loops": false, "priority": 100 },
-    { "id": "sleep", "frameCount": 20, "frameDuration": 0.07, "loops": true, "priority": 10 },
-    { "id": "happy", "frameCount": 12, "frameDuration": 0.05, "loops": false, "priority": 80 },
-    { "id": "sad", "frameCount": 12, "frameDuration": 0.055, "loops": false, "priority": 80 },
-    { "id": "think", "frameCount": 12, "frameDuration": 0.055, "loops": false, "priority": 40 },
-    { "id": "peek", "frameCount": 10, "frameDuration": 0.055, "loops": false, "priority": 80 },
-    { "id": "celebrate", "frameCount": 14, "frameDuration": 0.045, "loops": false, "priority": 100 }
+    { "id": "idle", "frameCount": 24, "frameDuration": 0.055, "playMode": "loop", "loops": true, "priority": 10 },
+    { "id": "turn", "frameCount": 10, "frameDuration": 0.045, "playMode": "once", "loops": false, "priority": 40 },
+    { "id": "stop", "frameCount": 8, "frameDuration": 0.05, "playMode": "once", "loops": false, "priority": 40 },
+    { "id": "blink", "frameCount": 6, "frameDuration": 0.042, "playMode": "once", "loops": false, "priority": 40 },
+    { "id": "breathing", "frameCount": 20, "frameDuration": 0.06, "playMode": "pingPong", "loops": true, "priority": 10 },
+    { "id": "walk", "frameCount": 16, "frameDuration": 0.05, "playMode": "loop", "loops": true, "priority": 60 },
+    { "id": "run", "frameCount": 14, "frameDuration": 0.036, "playMode": "loop", "loops": true, "priority": 60 },
+    { "id": "wave", "frameCount": 12, "frameDuration": 0.05, "playMode": "once", "loops": false, "priority": 100 },
+    { "id": "drink", "frameCount": 12, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 100 },
+    { "id": "sleep", "frameCount": 20, "frameDuration": 0.07, "playMode": "pingPong", "loops": true, "priority": 10 },
+    { "id": "happy", "frameCount": 12, "frameDuration": 0.05, "playMode": "once", "loops": false, "priority": 80 },
+    { "id": "sad", "frameCount": 12, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 80 },
+    { "id": "think", "frameCount": 12, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 40 },
+    { "id": "peek", "frameCount": 10, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 80 },
+    { "id": "celebrate", "frameCount": 14, "frameDuration": 0.045, "playMode": "once", "loops": false, "priority": 100 }
   ]
 }
