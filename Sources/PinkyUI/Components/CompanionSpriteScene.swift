@@ -50,7 +50,6 @@ final class CompanionSpriteScene: SKScene {
         super.init(size: size)
         scaleMode = .resizeFill
         backgroundColor = .clear
-        print("Companion resource source:", CompanionAtlasProvider.debugResourceBundleHint())
         setupNodes()
     }
 
@@ -498,7 +497,7 @@ final class CompanionSpriteScene: SKScene {
 
         frameSpriteNode.zRotation = 0
         frameSpriteNode.yScale = 1
-        frameSpriteNode.xScale = facingRight ? 1 : -1
+        frameSpriteNode.xScale = 1
         frameSpriteNode.position.y = 92
 
         switch state {
@@ -506,14 +505,11 @@ final class CompanionSpriteScene: SKScene {
             frameSpriteNode.position.y += wave * 2
         case .walk:
             frameSpriteNode.position.y += abs(step) * 3
-            frameSpriteNode.xScale = facingRight ? 1 : -1
         case .run:
             frameSpriteNode.position.y += abs(step) * 5
             frameSpriteNode.zRotation = wave * 0.05
-            frameSpriteNode.xScale = facingRight ? 1 : -1
         case .turn:
-            if frameIndex % 5 == 0 { facingRight.toggle() }
-            frameSpriteNode.xScale = facingRight ? 1 : -1
+            frameSpriteNode.zRotation = wave * 0.08
         case .sleep:
             frameSpriteNode.zRotation = -0.1
             frameSpriteNode.position.y -= 8

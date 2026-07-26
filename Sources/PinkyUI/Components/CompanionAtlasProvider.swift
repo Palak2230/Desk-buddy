@@ -65,6 +65,14 @@ final class CompanionAtlasProvider {
                 return url
             }
         }
+
+        let filename = "\(name).\(ext)"
+        for directory in sideResourceDirectories {
+            let candidate = directory.appendingPathComponent(filename, isDirectory: false)
+            if FileManager.default.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
         return nil
     }
 
@@ -75,6 +83,25 @@ final class CompanionAtlasProvider {
             unique[bundle.bundleURL] = bundle
         }
         return Array(unique.values)
+    }()
+
+    /// SwiftPM executable resources are frequently emitted in sibling *.bundle folders.
+    private static let sideResourceDirectories: [URL] = {
+        guard let executableDir = Bundle.main.executableURL?.deletingLastPathComponent() else {
+            return []
+        }
+
+        var directories: [URL] = [executableDir]
+        if let children = try? FileManager.default.contentsOfDirectory(
+            at: executableDir,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) {
+            for child in children where child.pathExtension == "bundle" {
+                directories.append(child)
+            }
+        }
+        return directories
     }()
     
     /// Debug helper to surface where companion textures are being loaded from.
