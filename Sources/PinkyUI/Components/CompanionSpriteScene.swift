@@ -4,19 +4,35 @@ import Core
 import Domain
 import Theme
 
-/// SpriteKit scene for rendering the companion with lightweight procedural animations.
+/// SpriteKit scene for rendering the companion with atlas-backed parts and themed tinting.
 @MainActor
 final class CompanionSpriteScene: SKScene {
-    private let shadowNode = SKShapeNode(ellipseOf: CGSize(width: 68, height: 14))
-    private let bodyNode = SKShapeNode(rectOf: CGSize(width: 76, height: 96), cornerRadius: 18)
-    private let headNode = SKShapeNode(circleOfRadius: 26)
-    private let leftEyeNode = SKShapeNode(circleOfRadius: 3.5)
-    private let rightEyeNode = SKShapeNode(circleOfRadius: 3.5)
-    private let heartNode = SKLabelNode(text: "♥")
+    // MARK: - Scene graph
+
+    private let rootNode = SKNode()
+    private let shadowNode = SKShapeNode(ellipseOf: CGSize(width: 72, height: 14))
+
+    private let torsoNode = SKSpriteNode(color: .white, size: CGSize(width: 74, height: 88))
+    private let hoodNode = SKSpriteNode(color: .white, size: CGSize(width: 72, height: 52))
+    private let headNode = SKSpriteNode(color: .white, size: CGSize(width: 62, height: 58))
+    private let hairNode = SKSpriteNode(color: .white, size: CGSize(width: 66, height: 40))
+    private let blushLeftNode = SKShapeNode(circleOfRadius: 4.5)
+    private let blushRightNode = SKShapeNode(circleOfRadius: 4.5)
+    private let leftEyeNode = SKShapeNode(ellipseOf: CGSize(width: 7, height: 7))
+    private let rightEyeNode = SKShapeNode(ellipseOf: CGSize(width: 7, height: 7))
+    private let mouthNode = SKShapeNode(path: CGPath(ellipseIn: CGRect(x: -5, y: -2, width: 10, height: 5), transform: nil))
+    private let leftFootNode = SKSpriteNode(color: .white, size: CGSize(width: 16, height: 8))
+    private let rightFootNode = SKSpriteNode(color: .white, size: CGSize(width: 16, height: 8))
+    private let accessoryNode = SKLabelNode(text: "♥")
     private let statusNode = SKLabelNode(text: "")
 
-    private var baseBodyY: CGFloat = 62
-    private var baseHeadY: CGFloat = 122
+    // Atlas overlays (if present they replace plain-tint appearance)
+    private let atlasProvider = CompanionAtlasProvider()
+    private var outfit: CompanionAtlasProvider.Outfit = .classic
+
+    private var baseBodyY: CGFloat = 58
+    private var baseHeadY: CGFloat = 114
+    private var facingRight = true
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -30,89 +46,126 @@ final class CompanionSpriteScene: SKScene {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func setOutfit(_ newOutfit: CompanionAtlasProvider.Outfit) {
+        outfit = newOutfit
+        applyAtlasTexturesIfAvailable()
+    }
+
     func apply(state: CharacterState, frameIndex: Int, theme: Theme) {
         applyTheme(theme)
 
         let progress = CGFloat(frameIndex)
-        let wave = sin(progress * 0.4)
-        let bounce = sin(progress * 0.7)
+        let wave = sin(progress * 0.42)
+        let step = sin(progress * 0.8)
+        let bob = abs(sin(progress * 0.5))
 
-        // Default posture.
-        bodyNode.position = CGPoint(x: size.width / 2, y: baseBodyY)
-        bodyNode.zRotation = 0
-        headNode.position = CGPoint(x: size.width / 2, y: baseHeadY)
+        // Default posture / reset.
+        rootNode.position = CGPoint(x: size.width / 2, y: 0)
+        rootNode.zRotation = 0
+        torsoNode.position = CGPoint(x: 0, y: baseBodyY)
+        hoodNode.position = CGPoint(x: 0, y: baseBodyY + 20)
+        headNode.position = CGPoint(x: 0, y: baseHeadY)
+        hairNode.position = CGPoint(x: 0, y: baseHeadY + 14)
         headNode.zRotation = 0
-        headNode.xScale = 1
-        heartNode.alpha = 0.25
+        torsoNode.zRotation = 0
+        leftFootNode.position = CGPoint(x: -16, y: baseBodyY - 44)
+        rightFootNode.position = CGPoint(x: 16, y: baseBodyY - 44)
+        leftFootNode.zRotation = 0
+        rightFootNode.zRotation = 0
+        accessoryNode.alpha = 0.15
+        accessoryNode.fontSize = 14
         statusNode.text = ""
         statusNode.alpha = 0
-        setEyes(closed: false)
+        statusNode.position = CGPoint(x: 0, y: baseHeadY + 26)
+        setExpression(.neutral)
 
         switch state {
         case .idle:
-            bodyNode.position.y += wave * 1.5
-            headNode.position.y += wave * 1.5
+            torsoNode.position.y += wave * 1.4
+            headNode.position.y += wave * 1.8
+            hairNode.position.y += wave * 1.5
+            setExpression(.smile)
         case .turn:
-            bodyNode.zRotation = wave * 0.22
+            torsoNode.zRotation = wave * 0.25
             headNode.zRotation = -wave * 0.18
+            facingRight.toggle()
+            rootNode.xScale = facingRight ? 1 : -1
             statusNode.text = "↺"
             statusNode.alpha = 0.8
+            setExpression(.blink)
         case .stop:
-            bodyNode.position.y -= abs(wave) * 1.2
-            headNode.position.y -= abs(wave) * 1.0
+            torsoNode.position.y -= bob * 2.0
+            headNode.position.y -= bob * 1.6
+            setExpression(.neutral)
         case .breathing:
-            bodyNode.yScale = 1 + wave * 0.03
+            torsoNode.yScale = 1 + wave * 0.03
             headNode.position.y += wave * 1.0
+            setExpression(.neutral)
         case .walk:
-            bodyNode.position.x += bounce * 8
-            headNode.position.x += bounce * 8
-            bodyNode.zRotation = wave * 0.08
+            torsoNode.position.y += wave * 1.1
+            headNode.position.y += wave * 1.1
+            leftFootNode.position.y += step * 2.2
+            rightFootNode.position.y -= step * 2.2
+            leftFootNode.zRotation = step * 0.2
+            rightFootNode.zRotation = -step * 0.2
+            setExpression(.focused)
         case .run:
-            bodyNode.position.x += bounce * 14
-            headNode.position.x += bounce * 14
-            bodyNode.zRotation = wave * 0.16
+            torsoNode.position.y += wave * 1.8
+            headNode.position.y += wave * 1.8
+            leftFootNode.position.y += step * 3.5
+            rightFootNode.position.y -= step * 3.5
+            leftFootNode.zRotation = step * 0.28
+            rightFootNode.zRotation = -step * 0.28
+            torsoNode.zRotation = wave * 0.13
             headNode.zRotation = wave * 0.05
+            setExpression(.focused)
         case .blink:
-            setEyes(closed: frameIndex % 6 > 1)
+            setExpression(frameIndex % 6 > 1 ? .blink : .smile)
         case .wave:
             headNode.zRotation = wave * 0.15
-            heartNode.alpha = 0.5
+            accessoryNode.alpha = 0.6
+            setExpression(.happy)
         case .drink:
             headNode.zRotation = -0.35
             headNode.position.y -= 3
             statusNode.text = "💧"
             statusNode.alpha = 0.8
+            setExpression(.sip)
         case .sleep:
-            setEyes(closed: true)
-            bodyNode.zRotation = -0.08
-            heartNode.alpha = 0.1
+            setExpression(.sleep)
+            torsoNode.zRotation = -0.08
+            accessoryNode.alpha = 0.05
             statusNode.text = "Zzz"
             statusNode.alpha = 0.85
         case .happy:
             headNode.position.y += 3 + abs(wave) * 2
-            heartNode.alpha = 0.95
-            heartNode.fontSize = 14 + abs(wave) * 5
+            accessoryNode.alpha = 1
+            accessoryNode.fontSize = 15 + abs(wave) * 5
+            setExpression(.happy)
         case .sad:
             headNode.position.y -= 2
             headNode.zRotation = -0.08
             statusNode.text = "..."
             statusNode.alpha = 0.7
+            setExpression(.sad)
         case .think:
             statusNode.text = "?"
             statusNode.alpha = 0.9
-            statusNode.position.x = headNode.position.x + 34
-            statusNode.position.y = headNode.position.y + 18
+            statusNode.position.x = 34
+            statusNode.position.y = baseHeadY + 18
+            setExpression(.neutral)
         case .peek:
-            bodyNode.position.x = size.width / 2 + 24
-            headNode.position.x = size.width / 2 + 24
+            rootNode.position.x += 24
             statusNode.text = "👀"
             statusNode.alpha = 0.9
+            setExpression(.blink)
         case .celebrate:
             headNode.position.y += abs(wave) * 8
-            heartNode.alpha = 1
-            heartNode.fontSize = 18 + abs(wave) * 8
+            accessoryNode.alpha = 1
+            accessoryNode.fontSize = 18 + abs(wave) * 8
             statusNode.text = "✨"
             statusNode.alpha = 0.9
+            setExpression(.happy)
         }
     }
 
@@ -120,52 +173,170 @@ final class CompanionSpriteScene: SKScene {
         shadowNode.fillColor = .black.withAlphaComponent(0.14)
         shadowNode.strokeColor = .clear
         shadowNode.position = CGPoint(x: size.width / 2, y: 24)
+        shadowNode.zPosition = 0
 
-        bodyNode.strokeColor = .clear
-        bodyNode.position = CGPoint(x: size.width / 2, y: baseBodyY)
+        torsoNode.position = CGPoint(x: 0, y: baseBodyY)
+        torsoNode.zPosition = 10
+        torsoNode.colorBlendFactor = 1
 
-        headNode.strokeColor = .clear
-        headNode.position = CGPoint(x: size.width / 2, y: baseHeadY)
+        hoodNode.position = CGPoint(x: 0, y: baseBodyY + 20)
+        hoodNode.zPosition = 11
+        hoodNode.colorBlendFactor = 1
+
+        headNode.position = CGPoint(x: 0, y: baseHeadY)
+        headNode.zPosition = 20
+        headNode.colorBlendFactor = 1
+
+        hairNode.position = CGPoint(x: 0, y: baseHeadY + 14)
+        hairNode.zPosition = 22
+        hairNode.colorBlendFactor = 1
+
+        blushLeftNode.position = CGPoint(x: -14, y: baseHeadY - 3)
+        blushLeftNode.zPosition = 23
+        blushLeftNode.strokeColor = .clear
+
+        blushRightNode.position = CGPoint(x: 14, y: baseHeadY - 3)
+        blushRightNode.zPosition = 23
+        blushRightNode.strokeColor = .clear
 
         leftEyeNode.fillColor = .black
         leftEyeNode.strokeColor = .clear
-        leftEyeNode.position = CGPoint(x: -10, y: 4)
+        leftEyeNode.position = CGPoint(x: -10, y: baseHeadY + 4)
+        leftEyeNode.zPosition = 24
 
         rightEyeNode.fillColor = .black
         rightEyeNode.strokeColor = .clear
-        rightEyeNode.position = CGPoint(x: 10, y: 4)
+        rightEyeNode.position = CGPoint(x: 10, y: baseHeadY + 4)
+        rightEyeNode.zPosition = 24
 
-        heartNode.fontName = "HelveticaNeue-Bold"
-        heartNode.fontSize = 14
-        heartNode.position = CGPoint(x: size.width / 2 + 24, y: baseHeadY + 24)
-        heartNode.alpha = 0.25
+        mouthNode.fillColor = .black
+        mouthNode.strokeColor = .clear
+        mouthNode.position = CGPoint(x: 0, y: baseHeadY - 8)
+        mouthNode.zPosition = 24
+
+        leftFootNode.position = CGPoint(x: -16, y: baseBodyY - 44)
+        leftFootNode.zPosition = 9
+        leftFootNode.colorBlendFactor = 1
+        leftFootNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+
+        rightFootNode.position = CGPoint(x: 16, y: baseBodyY - 44)
+        rightFootNode.zPosition = 9
+        rightFootNode.colorBlendFactor = 1
+        rightFootNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+
+        accessoryNode.fontName = "HelveticaNeue-Bold"
+        accessoryNode.fontSize = 14
+        accessoryNode.position = CGPoint(x: 24, y: baseHeadY + 24)
+        accessoryNode.alpha = 0.25
+        accessoryNode.zPosition = 30
 
         statusNode.fontName = "HelveticaNeue-Medium"
         statusNode.fontSize = 12
-        statusNode.position = CGPoint(x: size.width / 2 - 2, y: baseHeadY + 28)
+        statusNode.position = CGPoint(x: -2, y: baseHeadY + 28)
         statusNode.alpha = 0
+        statusNode.zPosition = 31
 
         addChild(shadowNode)
-        addChild(bodyNode)
-        addChild(headNode)
-        addChild(heartNode)
-        addChild(statusNode)
-        headNode.addChild(leftEyeNode)
-        headNode.addChild(rightEyeNode)
+        addChild(rootNode)
+
+        rootNode.addChild(leftFootNode)
+        rootNode.addChild(rightFootNode)
+        rootNode.addChild(torsoNode)
+        rootNode.addChild(hoodNode)
+        rootNode.addChild(headNode)
+        rootNode.addChild(hairNode)
+        rootNode.addChild(blushLeftNode)
+        rootNode.addChild(blushRightNode)
+        rootNode.addChild(leftEyeNode)
+        rootNode.addChild(rightEyeNode)
+        rootNode.addChild(mouthNode)
+        rootNode.addChild(accessoryNode)
+        rootNode.addChild(statusNode)
+
+        applyAtlasTexturesIfAvailable()
     }
 
     private func applyTheme(_ theme: Theme) {
-        bodyNode.fillColor = SKColor(Color(hex: theme.primary))
-        headNode.fillColor = SKColor(Color(hex: theme.secondary))
-        heartNode.fontColor = SKColor(Color(hex: theme.accent))
+        // Theme tinting keeps a pastel look while allowing distinct palettes.
+        torsoNode.color = SKColor(Color(hex: theme.primary))
+        hoodNode.color = SKColor(Color(hex: theme.primary)).withAlphaComponent(0.9)
+        headNode.color = SKColor(Color(hex: theme.secondary))
+        hairNode.color = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.9)
+        leftFootNode.color = SKColor(Color(hex: theme.surface))
+        rightFootNode.color = SKColor(Color(hex: theme.surface))
+        blushLeftNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.22)
+        blushRightNode.fillColor = SKColor(Color(hex: theme.accent)).withAlphaComponent(0.22)
+        accessoryNode.fontColor = SKColor(Color(hex: theme.accent))
         statusNode.fontColor = SKColor(Color(hex: theme.text))
     }
 
-    private func setEyes(closed: Bool) {
-        let width: CGFloat = closed ? 4 : 7
-        let height: CGFloat = closed ? 1.2 : 7
+    private enum Expression {
+        case neutral
+        case smile
+        case happy
+        case blink
+        case focused
+        case sad
+        case sleep
+        case sip
+    }
 
+    private func setExpression(_ expression: Expression) {
+        switch expression {
+        case .neutral:
+            setEyeShape(width: 7, height: 7)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -4, y: -1.5, width: 8, height: 3), transform: nil)
+        case .smile:
+            setEyeShape(width: 7, height: 7)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -5, y: -2, width: 10, height: 5), transform: nil)
+        case .happy:
+            setEyeShape(width: 6.5, height: 6.5)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -5.5, y: -3, width: 11, height: 6), transform: nil)
+        case .blink:
+            setEyeShape(width: 4, height: 1.2)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -4, y: -1.2, width: 8, height: 2.4), transform: nil)
+        case .focused:
+            setEyeShape(width: 6.5, height: 6.5)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -3.4, y: -1, width: 6.8, height: 2), transform: nil)
+        case .sad:
+            setEyeShape(width: 6.2, height: 6.2)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -3.5, y: -0.8, width: 7, height: 1.5), transform: nil)
+        case .sleep:
+            setEyeShape(width: 4, height: 1.1)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -2.2, y: -0.8, width: 4.4, height: 1.6), transform: nil)
+        case .sip:
+            setEyeShape(width: 6, height: 6)
+            mouthNode.path = CGPath(ellipseIn: CGRect(x: -1.8, y: -1.8, width: 3.6, height: 3.6), transform: nil)
+        }
+    }
+
+    private func setEyeShape(width: CGFloat, height: CGFloat) {
         leftEyeNode.path = CGPath(ellipseIn: CGRect(x: -width / 2, y: -height / 2, width: width, height: height), transform: nil)
         rightEyeNode.path = CGPath(ellipseIn: CGRect(x: -width / 2, y: -height / 2, width: width, height: height), transform: nil)
+    }
+
+    private func applyAtlasTexturesIfAvailable() {
+        if let torso = atlasProvider.partTexture(part: "companion_torso", outfit: outfit) {
+            torsoNode.texture = torso
+            torsoNode.colorBlendFactor = 0.35
+        }
+        if let hood = atlasProvider.partTexture(part: "companion_hood", outfit: outfit) {
+            hoodNode.texture = hood
+            hoodNode.colorBlendFactor = 0.35
+        }
+        if let head = atlasProvider.partTexture(part: "companion_head", outfit: outfit) {
+            headNode.texture = head
+            headNode.colorBlendFactor = 0.2
+        }
+        if let hair = atlasProvider.partTexture(part: "companion_hair", outfit: outfit) {
+            hairNode.texture = hair
+            hairNode.colorBlendFactor = 0.45
+        }
+        if let feet = atlasProvider.partTexture(part: "companion_feet", outfit: outfit) {
+            leftFootNode.texture = feet
+            rightFootNode.texture = feet
+            leftFootNode.colorBlendFactor = 0.25
+            rightFootNode.colorBlendFactor = 0.25
+        }
     }
 }
