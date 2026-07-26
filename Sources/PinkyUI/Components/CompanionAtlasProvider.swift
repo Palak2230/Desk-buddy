@@ -148,12 +148,19 @@ final class CompanionAtlasProvider {
                 let relativePath = fileURL.path.replacingOccurrences(of: baseDirectory.path, with: "")
                 let lowerRelativePath = relativePath.lowercased()
 
-                guard let markerRange = lowerRelativePath.range(of: "/character/") else { continue }
-                let suffix = lowerRelativePath[markerRange.upperBound...]
-                guard let stateFolder = suffix.split(separator: "/").first.map(String.init) else { continue }
-                let key = stateFolder.lowercased()
-                guard validStates.contains(key) else { continue }
-                guard isValidCharacterFrameName(stem: stem.lowercased(), state: key) else { continue }
+                let key: String
+                if let markerRange = lowerRelativePath.range(of: "/character/") {
+                    let suffix = lowerRelativePath[markerRange.upperBound...]
+                    guard let stateFolder = suffix.split(separator: "/").first.map(String.init) else { continue }
+                    key = stateFolder.lowercased()
+                    guard validStates.contains(key) else { continue }
+                    guard isValidCharacterFrameName(stem: stem.lowercased(), state: key) else { continue }
+                } else {
+                    // SwiftPM can flatten processed resources and drop parent folders.
+                    guard let parsed = parsedStateFromCharacterFrameStem(stem.lowercased()) else { continue }
+                    key = parsed
+                    guard validStates.contains(key) else { continue }
+                }
                 let frameNumber = parsedFrameIndex(fromStem: stem)
                 grouped[key, default: []].append((frameNumber, stem, fileURL))
             }
@@ -199,5 +206,13 @@ final class CompanionAtlasProvider {
         let suffix = String(stem.dropFirst(prefix.count))
         guard !suffix.isEmpty else { return false }
         return suffix.allSatisfy { $0.isNumber }
+    }
+
+    private static func parsedStateFromCharacterFrameStem(_ stem: String) -> String? {
+        guard let underscore = stem.firstIndex(of: "_") else { return nil }
+        let state = String(stem[..<underscore])
+        let suffix = String(stem[stem.index(after: underscore)...])
+        guard !state.isEmpty, !suffix.isEmpty, suffix.allSatisfy(\.isNumber) else { return nil }
+        return state
     }
 }

@@ -69,7 +69,7 @@ final class CompanionSpriteScene: SKScene {
 
         if let frameTexture = atlasProvider.stateTexture(for: state.rawValue, frameIndex: frameIndex) {
             frameSpriteNode.texture = frameTexture
-            frameSpriteNode.size = CGSize(width: 128, height: 128)
+            frameSpriteNode.size = fittedFrameSize(for: frameTexture)
             frameSpriteNode.alpha = 1
             frameSpriteNode.xScale = facingRight ? 1 : -1
             rootNode.alpha = 0
@@ -478,5 +478,18 @@ final class CompanionSpriteScene: SKScene {
             rightFootNode.colorBlendFactor = 0.0
             hasFeetTexture = true
         }
+    }
+
+    private func fittedFrameSize(for texture: SKTexture) -> CGSize {
+        let textureSize = texture.size()
+        guard textureSize.width > 0, textureSize.height > 0 else {
+            return CGSize(width: 120, height: 140)
+        }
+
+        // Preserve mascot proportions and fit inside companion viewport.
+        let maxWidth: CGFloat = 122
+        let maxHeight: CGFloat = 150
+        let scale = min(maxWidth / textureSize.width, maxHeight / textureSize.height)
+        return CGSize(width: textureSize.width * scale, height: textureSize.height * scale)
     }
 }
