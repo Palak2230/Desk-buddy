@@ -50,6 +50,7 @@ final class CompanionSpriteScene: SKScene {
         super.init(size: size)
         scaleMode = .resizeFill
         backgroundColor = .clear
+        print("Companion resource source:", CompanionAtlasProvider.debugResourceBundleHint())
         setupNodes()
     }
 
