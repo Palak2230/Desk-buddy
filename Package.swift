@@ -128,7 +128,10 @@ let package = Package(
             dependencies: [
                 "Core",
             ],
-            path: "Sources/PinkyAnimations"
+            path: "Sources/PinkyAnimations",
+            resources: [
+                .process("Resources"),
+            ]
         ),
 
         // MARK: - Theme Engine

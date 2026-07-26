@@ -11,10 +11,11 @@ final class CharacterAnimationController: ObservableObject {
     @Published private(set) var frameIndex: Int = 0
 
     private let animationEngine = AnimationEngine()
+    private let spriteCatalog = SpriteSheetCatalog()
     private var cancellables = Set<AnyCancellable>()
 
     init(stateMachine: CharacterStateMachine) {
-        registerStateClips()
+        registerStateClips(from: "deskbuddy-default")
 
         stateMachine.$currentState
             .removeDuplicates()
@@ -34,8 +35,14 @@ final class CharacterAnimationController: ObservableObject {
         animationEngine.play(CharacterState.idle.rawValue)
     }
 
-    private func registerStateClips() {
-        let clips = CharacterState.allCases.map { state in
+    private func registerStateClips(from manifestID: String) {
+        let loaded = spriteCatalog.loadClips(manifestID: manifestID)
+        if !loaded.isEmpty {
+            animationEngine.register(loaded)
+            return
+        }
+
+        let fallbackClips = CharacterState.allCases.map { state in
             let frameCount = frameCount(for: state)
             let frameDuration = frameDuration(for: state)
             let frames = (0 ..< frameCount).map {
@@ -53,7 +60,7 @@ final class CharacterAnimationController: ObservableObject {
             )
         }
 
-        animationEngine.register(clips)
+        animationEngine.register(fallbackClips)
     }
 
     private func frameCount(for state: CharacterState) -> Int {

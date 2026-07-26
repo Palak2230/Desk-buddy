@@ -11,17 +11,41 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     public let iconName = "drop.fill"
 
     @Published public var isReminderActive = false
+    @Published public private(set) var reminderMessage = "Did you drink water? 💧"
+    @Published public private(set) var heartBurstID = UUID()
+    @Published public private(set) var phase: ReminderPhase = .idle
 
     private let waterStore: WaterStoreProtocol
     private let stateMachine: CharacterStateMachine
     private let playSound: (_ kind: SoundKind) -> Void
     private var reminderTimer: Timer?
-    private var ignoreWorkItem: DispatchWorkItem?
+    private var flowWorkItems: [DispatchWorkItem] = []
+    private var regularReminderIntervalMinutes = 60
+
+    private enum Constants {
+        static let walkInDuration: TimeInterval = 1.2
+        static let afterDrinkHappyDelay: TimeInterval = 1.5
+        static let afterHappyWalkBackDelay: TimeInterval = 1.2
+        static let walkBackResetDelay: TimeInterval = 1.0
+        static let firstIgnoreTimeout: TimeInterval = 30
+        static let peekDuration: TimeInterval = 1.0
+        static let secondChanceTimeout: TimeInterval = 20
+        static let snoozeMinutes = 5
+    }
 
     public enum SoundKind: Sendable {
         case reminder
         case success
         case snooze
+    }
+
+    public enum ReminderPhase: Sendable, Equatable {
+        case idle
+        case approaching
+        case prompting
+        case secondChance
+        case completed
+        case snoozed
     }
 
     public init(
@@ -39,15 +63,14 @@ public final class WaterReminderSkill: Skill, ObservableObject {
     }
 
     public func deactivate() async {
-        ignoreWorkItem?.cancel()
-        ignoreWorkItem = nil
+        cancelFlow(resetPhase: true)
         reminderTimer?.invalidate()
-        reminderTimer = nil
     }
 
     /// Schedules the next water reminder after the given interval.
     public func scheduleReminder(afterMinutes minutes: Int) {
         reminderTimer?.invalidate()
+        regularReminderIntervalMinutes = max(minutes, Constants.snoozeMinutes)
         reminderTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(minutes * 60), repeats: false) { _ in
             Task { @MainActor [weak self] in
                 self?.triggerReminder()
@@ -57,65 +80,116 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
     /// Triggers the water reminder sequence on the companion.
     public func triggerReminder() {
-        ignoreWorkItem?.cancel()
+        reminderTimer?.invalidate()
+        cancelFlow(resetPhase: false)
+        phase = .approaching
         isReminderActive = false
+        reminderMessage = "Did you drink water? 💧"
         playSound(.reminder)
         stateMachine.transition(to: .walk)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+        enqueueFlow(after: Constants.walkInDuration) { [weak self] in
             guard let self else { return }
             stateMachine.transition(to: .wave)
+            phase = .prompting
             isReminderActive = true
-            scheduleIgnoreFallback()
+            scheduleFirstIgnoreFallback()
         }
     }
 
     /// Records a positive water intake response.
     public func confirmDrink() {
-        ignoreWorkItem?.cancel()
-        ignoreWorkItem = nil
+        cancelFlow(resetPhase: false)
         waterStore.addRecord(WaterRecord())
         playSound(.success)
+        heartBurstID = UUID()
+        phase = .completed
         isReminderActive = false
         stateMachine.transition(to: .drink)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+
+        enqueueFlow(after: Constants.afterDrinkHappyDelay) { [weak self] in
             self?.stateMachine.transition(to: .happy)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                self?.stateMachine.transition(to: .walk)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    self?.stateMachine.resetToIdle()
-                }
-            }
+        }
+
+        enqueueFlow(after: Constants.afterDrinkHappyDelay + Constants.afterHappyWalkBackDelay) { [weak self] in
+            self?.stateMachine.transition(to: .walk)
+        }
+
+        enqueueFlow(
+            after: Constants.afterDrinkHappyDelay + Constants.afterHappyWalkBackDelay + Constants.walkBackResetDelay
+        ) { [weak self] in
+            self?.stateMachine.resetToIdle()
+            self?.phase = .idle
+            guard let self else { return }
+            scheduleReminder(afterMinutes: regularReminderIntervalMinutes)
         }
     }
 
     /// Snoozes the reminder for 5 minutes.
     public func snooze() {
-        ignoreWorkItem?.cancel()
-        ignoreWorkItem = nil
+        cancelFlow(resetPhase: false)
         playSound(.snooze)
         isReminderActive = false
+        phase = .snoozed
         stateMachine.resetToIdle()
-        scheduleReminder(afterMinutes: 5)
+        scheduleSnoozeReminder()
     }
 
-    private func scheduleIgnoreFallback() {
-        ignoreWorkItem?.cancel()
-
-        let workItem = DispatchWorkItem { [weak self] in
+    private func scheduleFirstIgnoreFallback() {
+        enqueueFlow(after: Constants.firstIgnoreTimeout) { [weak self] in
             guard let self, isReminderActive else { return }
-
             isReminderActive = false
             stateMachine.transition(to: .peek)
+            phase = .secondChance
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                self?.stateMachine.resetToIdle()
+            enqueueFlow(after: Constants.peekDuration) { [weak self] in
+                guard let self else { return }
+                stateMachine.resetToIdle()
+                reminderMessage = "Let's drink some water soon 💧"
+                isReminderActive = true
+                scheduleSecondChanceFallback()
             }
-
-            scheduleReminder(afterMinutes: 5)
         }
+    }
 
-        ignoreWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30, execute: workItem)
+    private func scheduleSecondChanceFallback() {
+        enqueueFlow(after: Constants.secondChanceTimeout) { [weak self] in
+            guard let self, isReminderActive else { return }
+            isReminderActive = false
+            stateMachine.transition(to: .sad)
+            phase = .snoozed
+
+            enqueueFlow(after: Constants.peekDuration) { [weak self] in
+                self?.stateMachine.resetToIdle()
+                self?.scheduleSnoozeReminder()
+            }
+        }
+    }
+
+    private func scheduleSnoozeReminder() {
+        reminderTimer?.invalidate()
+        reminderTimer = Timer.scheduledTimer(
+            withTimeInterval: TimeInterval(Constants.snoozeMinutes * 60),
+            repeats: false
+        ) { _ in
+            Task { @MainActor [weak self] in
+                self?.triggerReminder()
+            }
+        }
+    }
+
+    private func enqueueFlow(after delay: TimeInterval, _ action: @escaping () -> Void) {
+        let workItem = DispatchWorkItem(block: action)
+        flowWorkItems.append(workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+    }
+
+    private func cancelFlow(resetPhase: Bool) {
+        flowWorkItems.forEach { $0.cancel() }
+        flowWorkItems.removeAll()
+        isReminderActive = false
+        if resetPhase {
+            phase = .idle
+        }
     }
 }

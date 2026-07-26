@@ -1,3 +1,4 @@
+#if canImport(XCTest)
 import XCTest
 @testable import Core
 @testable import Domain
@@ -22,3 +23,4 @@ final class CoreTests: XCTestCase {
         XCTAssertFalse(theme.name.isEmpty)
     }
 }
+#endif
