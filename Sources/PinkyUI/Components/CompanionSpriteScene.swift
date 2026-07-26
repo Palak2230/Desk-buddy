@@ -67,8 +67,19 @@ final class CompanionSpriteScene: SKScene {
         // Keep atlas-frame rendering anchored even after scene resize.
         frameSpriteNode.position = CGPoint(x: size.width / 2, y: 92)
 
+        if let referenceTexture = atlasProvider.texture(named: "reference_fullbody") {
+            frameSpriteNode.texture = referenceTexture
+            frameSpriteNode.size = CGSize(width: 160, height: 160)
+            frameSpriteNode.alpha = 1
+            rootNode.alpha = 0
+            shadowNode.alpha = 0.2
+            applyReferencePose(state: state, frameIndex: frameIndex)
+            return
+        }
+
         if let frameTexture = atlasProvider.texture(named: frameTextureName(state: state, frameIndex: frameIndex)) {
             frameSpriteNode.texture = frameTexture
+            frameSpriteNode.size = CGSize(width: 128, height: 128)
             frameSpriteNode.alpha = 1
             frameSpriteNode.xScale = facingRight ? 1 : -1
             rootNode.alpha = 0
@@ -476,6 +487,41 @@ final class CompanionSpriteScene: SKScene {
             leftFootNode.colorBlendFactor = 0.0
             rightFootNode.colorBlendFactor = 0.0
             hasFeetTexture = true
+        }
+    }
+
+    private func applyReferencePose(state: CharacterState, frameIndex: Int) {
+        let t = CGFloat(frameIndex)
+        let wave = sin(t * 0.42)
+        let step = sin(t * 0.85)
+
+        frameSpriteNode.zRotation = 0
+        frameSpriteNode.yScale = 1
+        frameSpriteNode.xScale = facingRight ? 1 : -1
+        frameSpriteNode.position.y = 92
+
+        switch state {
+        case .idle, .breathing, .stop:
+            frameSpriteNode.position.y += wave * 2
+        case .walk:
+            frameSpriteNode.position.y += abs(step) * 3
+            frameSpriteNode.xScale = facingRight ? 1 : -1
+        case .run:
+            frameSpriteNode.position.y += abs(step) * 5
+            frameSpriteNode.zRotation = wave * 0.05
+            frameSpriteNode.xScale = facingRight ? 1 : -1
+        case .turn:
+            if frameIndex % 5 == 0 { facingRight.toggle() }
+            frameSpriteNode.xScale = facingRight ? 1 : -1
+        case .sleep:
+            frameSpriteNode.zRotation = -0.1
+            frameSpriteNode.position.y -= 8
+        case .happy, .celebrate:
+            frameSpriteNode.position.y += abs(wave) * 6
+        case .sad:
+            frameSpriteNode.position.y -= 2
+        case .wave, .drink, .think, .peek, .blink:
+            frameSpriteNode.position.y += wave
         }
     }
 

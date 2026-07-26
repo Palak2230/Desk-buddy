@@ -36,6 +36,12 @@ final class CompanionAtlasProvider {
         for atlas in atlases where atlas.textureNames.contains(textureName) {
             return atlas.textureNamed(textureName)
         }
+        // SwiftPM may flatten `.atlas` resources into plain PNG files in the app bundle.
+        // Fall back to direct image-name lookup so frame textures still resolve.
+        let bundle = Bundle.main
+        if bundle.url(forResource: textureName, withExtension: "png") != nil {
+            return SKTexture(imageNamed: textureName)
+        }
         return nil
     }
 
