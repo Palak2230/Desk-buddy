@@ -107,7 +107,9 @@ final class CompanionMovementController: CompanionMovementControlling {
             return
         }
 
-        let targetX = cursor.x - panelSize.width / 2
+        // Stop beside cursor instead of centering under it.
+        let sideOffset: CGFloat = 30
+        let targetX = cursor.x - panelSize.width - sideOffset
         let targetY = cursor.y - panelSize.height / 2
         let clampedX = min(max(targetX, frame.minX + 8), frame.maxX - panelSize.width - 8)
         let clampedY = min(max(targetY, frame.minY + 8), frame.maxY - panelSize.height - 8)

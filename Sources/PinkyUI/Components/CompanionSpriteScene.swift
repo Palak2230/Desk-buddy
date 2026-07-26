@@ -224,6 +224,15 @@ final class CompanionSpriteScene: SKScene {
             statusNode.text = "✨"
             statusNode.alpha = 0.9
             setExpression(.happy)
+        case .greeting:
+            let seconds = CGFloat(frameIndex) * 0.05
+            if seconds < 0.15 {
+                let p = max(0, min(1, seconds / 0.15))
+                torsoNode.position.y += sin(p * .pi) * 2.0
+                headNode.position.y += sin(p * .pi) * 1.2
+            }
+            headNode.zRotation = 4.0 * (.pi / 180.0)
+            setExpression((seconds >= 0.25 && seconds < 0.75) ? .blink : .smile)
         }
     }
 

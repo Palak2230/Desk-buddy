@@ -164,7 +164,7 @@ final class CompanionAtlasProvider {
         var grouped: [String: [(index: Int, name: String, url: URL)]] = [:]
         let validStates = Set([
             "idle", "turn", "stop", "blink", "breathing", "walk", "run",
-            "wave", "drink", "sleep", "happy", "sad", "think", "peek", "celebrate",
+            "wave", "drink", "sleep", "happy", "sad", "think", "peek", "celebrate", "greeting",
         ])
 
         for baseDirectory in resourceSearchDirectories {

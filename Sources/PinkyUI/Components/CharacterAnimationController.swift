@@ -77,6 +77,8 @@ final class CharacterAnimationController: ObservableObject {
             return 6
         case .sleep:
             return 20
+        case .greeting:
+            return 108
         case .wave, .drink, .happy, .sad, .think, .peek, .celebrate:
             return 12
         }

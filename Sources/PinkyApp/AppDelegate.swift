@@ -123,13 +123,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func testReminder() {
-        // Delay slightly so the menu closes and cursor can settle
-        // before sampling the destination.
+        // Delay slightly so the menu closes before triggering flow.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            self?.companionWindow?.moveBuddyToCursor { [weak self] in
-                Task { @MainActor [weak self] in
-                    self?.container.waterSkill.triggerReminder(shouldApproach: false)
-                }
+            Task { @MainActor [weak self] in
+                self?.container.waterSkill.triggerReminder(shouldApproach: true)
             }
         }
     }

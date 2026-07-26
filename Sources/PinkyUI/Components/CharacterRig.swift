@@ -7,7 +7,7 @@ final class CharacterRig {
     let rootNode = SKNode()
     /// Debug aid: reveal rig parts incrementally to validate asset placement.
     /// Set to `nil` to show all parts normally.
-    private let partValidationStage: Int? = 10
+    private let partValidationStage: Int? = 12
     /// Temporary mode: hide arm sprites, render hands only.
     private let useHandsOnlyArms = true
 
@@ -53,6 +53,7 @@ final class CharacterRig {
     private var isBottleEffectVisible = false
     private var isHeartEffectVisible = false
     private var isSweatEffectVisible = false
+    private var isGreetingWaveActive = false
 
     init(atlasProvider: CompanionAtlasProvider) {
         self.atlasProvider = atlasProvider
@@ -135,6 +136,10 @@ final class CharacterRig {
         sweatNode.alpha = visible ? 1 : 0
     }
 
+    func setGreetingWaveActive(_ active: Bool) {
+        isGreetingWaveActive = active
+    }
+
     private func buildHierarchy() {
         rootNode.zPosition = 60
 
@@ -191,8 +196,9 @@ final class CharacterRig {
         bottleNode.position = CGPoint(x: 36, y: 74)
         bottleNode.zPosition = 30
         bottleNode.alpha = 0
-        heartNode.position = CGPoint(x: 26, y: 145)
-        heartNode.zPosition = 31
+        // Keep floating reminder hearts behind mascot body.
+        heartNode.position = CGPoint(x: 24, y: 120)
+        heartNode.zPosition = 17
         heartNode.alpha = 0
         sweatNode.position = CGPoint(x: 24, y: 132)
         sweatNode.zPosition = 31
@@ -333,7 +339,7 @@ final class CharacterRig {
             }
             if useHandsOnlyArms {
                 leftArmNode.alpha = 0
-                rightArmNode.alpha = 0
+                rightArmNode.alpha = isGreetingWaveActive ? 1 : 0
                 leftHandNode.alpha = 1
                 rightHandNode.alpha = 1
             }
@@ -370,7 +376,7 @@ final class CharacterRig {
         }
         if useHandsOnlyArms {
             leftArmNode.alpha = 0
-            rightArmNode.alpha = 0
+            rightArmNode.alpha = isGreetingWaveActive ? 1 : 0
         }
         // Keep heart clip visible during validation so placement is easy to verify.
         heartClipNode.alpha = 1

@@ -136,3 +136,69 @@ The package uses clean modular targets:
 - Prefer extending current `WaterReminderSkill` flow rather than replacing it.
 - Keep user-facing naming as `Desk Buddy`; avoid old `Pinky` naming in new code.
 - Avoid introducing cloud dependencies or subscription logic.
+
+## Session Achievements (Jul 26, 2026)
+
+This section records what was completed in the latest implementation/debug session.
+
+### Mascot Rendering Pipeline
+
+- Upgraded the companion rendering path to support a rigged multi-part character flow in `UI`:
+  - `CharacterRig.swift` for part hierarchy and texture binding
+  - `CharacterRigAnimator.swift` for state-driven pose logic
+  - `CompanionSpriteScene.swift` applying rig output per frame
+- Added/used part-based loading through `CompanionAtlasProvider.characterPartTexture(group:name:)`.
+- Preserved fallback behavior for missing assets (no hard crash).
+
+### Character Parts Updated
+
+- Replaced and cleaned multiple character assets (transparent PNG conversion, crop fixes, orientation fixes where needed), including:
+  - Head set: `head`, `hair_front`, `hair_back`, `heart_clip`
+  - Body set: `hoodie`, `left_hand`, `right_hand`
+  - Legs set: `left_leg`, `right_leg`
+  - Extras: `heart` (used for side-heart effect)
+- Asset cleanup repeatedly handled black/checkerboard backgrounds and label/text artifacts from generated source images.
+
+### Current Visual Mode
+
+- `CharacterRig` currently runs with:
+  - `useHandsOnlyArms = true` (arm sprites hidden, hand sprites shown directly)
+  - `partValidationStage` currently set to a non-nil debug stage value in code (partial reveal mode)
+- Heart clip visibility was explicitly tuned (position/z-order/size) and forced visible during staged validation.
+- Side-effect nodes (`heart`, `bottle`, `sweat`) now preserve state-driven visibility even while staged validation is active.
+
+### Water Reminder UX Flow Enhancements
+
+- Added movement integration hooks in `WaterReminderSkill`:
+  - `requestReminderApproach` callback (move near cursor before prompting)
+  - `requestReturnHome` callback (walk back home at flow end)
+- Reminder behavior now supports:
+  - approach to cursor
+  - prompt at cursor location
+  - return home after completion/snooze/timeout branch
+
+### Movement System Improvements
+
+- `CompanionMovementController` now supports:
+  - completion-aware movement (`move(to:completion:)`)
+  - cursor-targeted movement (`moveToCursor`)
+  - explicit fallback to destination if platform animation skips movement
+- Replaced pure AppKit animator movement with explicit frame-stepped movement (`~60 FPS`) for visible walk travel.
+
+### App/Runtime Controls
+
+- Menu bar item now retained correctly in `AppDelegate` (status item lifecycle bug fixed).
+- Added menu actions for local debugging/verification:
+  - `Move Buddy To Cursor`
+  - `Test Water Reminder`
+- `Test Water Reminder` path updated to deterministic move-then-prompt behavior.
+
+### Reliability / Process Fixes
+
+- Resolved duplicate app-instance confusion by killing stale DeskBuddy processes and restarting cleanly.
+- Rebuilt repeatedly after each functional change; recent `swift build` runs are passing.
+
+### Known Active Caveats
+
+- Because staged validation is still enabled in `CharacterRig` (non-nil `partValidationStage`), full normal rendering may be intentionally restricted until reset to `nil`.
+- Some face and shoe assets have required iterative correction due to noisy generated source sheets; continue validating each texture visually in-app.

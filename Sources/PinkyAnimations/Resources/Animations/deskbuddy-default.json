@@ -15,6 +15,7 @@
     { "id": "sad", "frameCount": 12, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 80 },
     { "id": "think", "frameCount": 12, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 40 },
     { "id": "peek", "frameCount": 10, "frameDuration": 0.055, "playMode": "once", "loops": false, "priority": 80 },
-    { "id": "celebrate", "frameCount": 14, "frameDuration": 0.045, "playMode": "once", "loops": false, "priority": 100 }
+    { "id": "celebrate", "frameCount": 14, "frameDuration": 0.045, "playMode": "once", "loops": false, "priority": 100 },
+    { "id": "greeting", "frameCount": 108, "frameDuration": 0.05, "playMode": "loop", "loops": true, "priority": 100 }
   ]
 }

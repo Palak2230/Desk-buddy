@@ -9,6 +9,7 @@ final class CharacterRigAnimator {
         let quick = sin(t * 0.75)
 
         resetPose(rig)
+        rig.setGreetingWaveActive(state == .greeting)
 
         switch state {
         case .idle:
@@ -59,6 +60,7 @@ final class CharacterRigAnimator {
             rig.setMouthTexture("mouth_smile")
         case .drink:
             rig.setBottleVisible(true)
+            rig.setHeartVisible(true)
             rig.rightArmPivot.zRotation = -0.95 + sin(t * 0.5) * 0.08
             rig.rightHandNode.zRotation = -0.35
             rig.bottleNode.zRotation = -0.65
@@ -73,7 +75,6 @@ final class CharacterRigAnimator {
             rig.setEyesTexture("eyes_happy")
             rig.setMouthTexture("mouth_smile")
         case .celebrate:
-            rig.setHeartVisible(true)
             rig.leftArmPivot.zRotation = -0.8 + sin(t * 0.8) * 0.18
             rig.rightArmPivot.zRotation = 0.8 - sin(t * 0.8) * 0.18
             rig.torsoNode.position.y += abs(quick) * 4.2
@@ -108,6 +109,51 @@ final class CharacterRigAnimator {
             rig.setSweatVisible(frameIndex % 26 > 18)
             rig.setEyesTexture("eyes_open")
             rig.setMouthTexture("mouth_sad")
+        case .greeting:
+            // Timeline: bounce (0.15s), one gentle wave, closed-eye smile hold (0.5s), reopen.
+            // We model this at 0.05s/frame to match manifest clip timing.
+            let seconds = CGFloat(frameIndex) * 0.05
+            let bounceDuration: CGFloat = 0.15
+            let waveDuration: CGFloat = 5.0
+            let closedStart: CGFloat = waveDuration
+            let closedEnd: CGFloat = closedStart + 0.25
+
+            // Small body bounce.
+            if seconds < bounceDuration {
+                let p = max(0, min(1, seconds / bounceDuration))
+                let bounce = sin(p * .pi) * 2.0
+                rig.torsoNode.position.y += bounce
+                rig.neckPivot.position.y += bounce * 0.8
+            }
+
+            // Head tilt about 4° toward cursor side (cursor is targeted beside buddy).
+            rig.neckPivot.zRotation = 4.0 * (.pi / 180.0)
+
+            // One natural wave: raise and lower once (no repeated oscillation).
+            let wp = max(0, min(1, seconds / waveDuration))
+            let waveArc = sin(wp * .pi)
+            // Keep arm raised, then sweep clearly left-right in a to-fro motion.
+            // 4 full cycles across the 5s wave window for visible motion.
+            let sweep = sin(wp * (.pi * 2.0) * 4.0)
+            rig.rightArmPivot.position.x += sweep * 18
+            rig.rightArmPivot.position.y += waveArc * 6
+            rig.rightArmPivot.zRotation = -0.5 - waveArc * 0.5 + sweep * 0.35
+            rig.rightArmNode.yScale = 1.0 + abs(sweep) * 0.15
+            rig.rightArmNode.xScale = 1.0 + abs(sweep) * 0.06
+            rig.leftArmPivot.zRotation = waveArc * 0.06
+            // Visible hand sweep even in hands-only mode.
+            rig.rightHandNode.position = CGPoint(
+                x: 2 + sweep * 26,
+                y: -41 + waveArc * 15
+            )
+            rig.rightHandNode.zRotation = sweep * 0.6
+
+            rig.setMouthTexture("mouth_smile")
+            if seconds >= closedStart && seconds < closedEnd {
+                rig.setEyesTexture("eyes_closed")
+            } else {
+                rig.setEyesTexture("eyes_open")
+            }
         }
 
         rig.rootNode.xScale = facingRight ? 1 : -1
@@ -135,6 +181,8 @@ final class CharacterRigAnimator {
         rig.rightArmPivot.position = CGPoint(x: 28, y: 82)
         rig.leftArmPivot.zRotation = 0
         rig.rightArmPivot.zRotation = 0
+        rig.leftHandNode.position = CGPoint(x: -3, y: -41)
+        rig.rightHandNode.position = CGPoint(x: 2, y: -41)
         rig.leftHandNode.zRotation = 0
         rig.rightHandNode.zRotation = 0
 

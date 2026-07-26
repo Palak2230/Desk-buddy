@@ -28,6 +28,10 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
     private enum Constants {
         static let walkInDuration: TimeInterval = 1.2
+        static let greetingWaveDuration: TimeInterval = 5.0
+        static let greetingClosedEyeHold: TimeInterval = 0.25
+        static let greetingPostOpenDelay: TimeInterval = 0.05
+        static let greetingTotalDuration: TimeInterval = greetingWaveDuration + greetingClosedEyeHold + greetingPostOpenDelay
         static let afterDrinkHappyDelay: TimeInterval = 1.5
         static let afterHappyWalkBackDelay: TimeInterval = 1.2
         static let walkBackResetDelay: TimeInterval = 1.0
@@ -91,20 +95,20 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         reminderMessage = "Did you drink water? 💧"
         playSound(.reminder)
         guard shouldApproach else {
-            presentReminderPrompt()
+            startGreetingThenPrompt()
             return
         }
         if let requestReminderApproach {
             requestReminderApproach { [weak self] in
                 guard let self else { return }
-                self.presentReminderPrompt()
+                self.startGreetingThenPrompt()
             }
             return
         }
 
         stateMachine.transition(to: .walk)
         enqueueFlow(after: Constants.walkInDuration) { [weak self] in
-            self?.presentReminderPrompt()
+            self?.startGreetingThenPrompt()
         }
     }
 
@@ -169,6 +173,13 @@ public final class WaterReminderSkill: Skill, ObservableObject {
         phase = .prompting
         isReminderActive = true
         scheduleFirstIgnoreFallback()
+    }
+
+    private func startGreetingThenPrompt() {
+        stateMachine.transition(to: .greeting)
+        enqueueFlow(after: Constants.greetingTotalDuration) { [weak self] in
+            self?.presentReminderPrompt()
+        }
     }
 
     private func scheduleSecondChanceFallback() {

@@ -17,11 +17,12 @@ public enum CharacterState: String, CaseIterable, Codable, Sendable {
     case think
     case peek
     case celebrate
+    case greeting
 
     /// Whether this state loops indefinitely until interrupted.
     public var isLooping: Bool {
         switch self {
-        case .idle, .breathing, .walk, .run, .sleep:
+        case .idle, .breathing, .walk, .run, .sleep, .greeting:
             return true
         default:
             return false
@@ -31,7 +32,7 @@ public enum CharacterState: String, CaseIterable, Codable, Sendable {
     /// Priority for animation interruption (higher wins).
     public var priority: Int {
         switch self {
-        case .celebrate, .drink, .wave:
+        case .celebrate, .drink, .wave, .greeting:
             return 100
         case .peek, .happy, .sad:
             return 80
