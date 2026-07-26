@@ -2,6 +2,8 @@
   "id": "deskbuddy-default",
   "clips": [
     { "id": "idle", "frameCount": 24, "frameDuration": 0.055, "loops": true, "priority": 10 },
+    { "id": "turn", "frameCount": 10, "frameDuration": 0.045, "loops": false, "priority": 40 },
+    { "id": "stop", "frameCount": 8, "frameDuration": 0.05, "loops": false, "priority": 40 },
     { "id": "blink", "frameCount": 6, "frameDuration": 0.042, "loops": false, "priority": 40 },
     { "id": "breathing", "frameCount": 20, "frameDuration": 0.06, "loops": true, "priority": 10 },
     { "id": "walk", "frameCount": 16, "frameDuration": 0.05, "loops": true, "priority": 60 },

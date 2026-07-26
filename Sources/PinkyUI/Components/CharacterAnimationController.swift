@@ -69,6 +69,10 @@ final class CharacterAnimationController: ObservableObject {
             return 24
         case .walk, .run:
             return 16
+        case .turn:
+            return 10
+        case .stop:
+            return 8
         case .blink:
             return 6
         case .sleep:

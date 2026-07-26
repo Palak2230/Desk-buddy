@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import Presentation
+import Character
 
 /// Manages the floating companion window using AppKit for precise desktop positioning.
 @MainActor
@@ -8,6 +9,7 @@ final class CompanionWindowController: NSWindowController {
     private let container: DependencyContainer
     private let defaults = UserDefaults.standard
     private var moveObserver: NSObjectProtocol?
+    private var movementController: CompanionMovementController?
 
     private enum Keys {
         static let originX = "com.palakagarwal.deskbuddy.window.originX"
@@ -44,14 +46,33 @@ final class CompanionWindowController: NSWindowController {
 
         let x = defaults.double(forKey: Keys.originX)
         let y = defaults.double(forKey: Keys.originY)
+        let homePosition: NSPoint
         if x > 0, y > 0 {
-            panel.setFrameOrigin(NSPoint(x: x, y: y))
+            homePosition = NSPoint(x: x, y: y)
         } else if let screen = NSScreen.main {
             let screenFrame = screen.visibleFrame
-            panel.setFrameOrigin(NSPoint(x: screenFrame.maxX - 180, y: screenFrame.minY + 20))
+            homePosition = NSPoint(x: screenFrame.maxX - 180, y: screenFrame.minY + 20)
+        } else {
+            homePosition = NSPoint(x: 20, y: 20)
+        }
+
+        // Start just outside the right screen edge, then walk to home.
+        if let screen = NSScreen.main {
+            let screenFrame = screen.visibleFrame
+            panel.setFrameOrigin(NSPoint(x: screenFrame.maxX + 8, y: homePosition.y))
+        } else {
+            panel.setFrameOrigin(homePosition)
         }
 
         super.init(window: panel)
+        movementController = CompanionMovementController(
+            panel: panel,
+            stateMachine: container.stateMachine,
+            homePosition: homePosition,
+            walkingSpeedProvider: { [weak container] in
+                container?.coordinator.settings.walkingSpeed ?? 220
+            }
+        )
         observeWindowMoves(panel: panel)
     }
 
@@ -62,6 +83,7 @@ final class CompanionWindowController: NSWindowController {
 
     func show() {
         window?.orderFrontRegardless()
+        movementController?.walkHome()
     }
 
     deinit {
@@ -85,6 +107,7 @@ final class CompanionWindowController: NSWindowController {
                 let origin = window.frame.origin
                 defaults.set(origin.x, forKey: Keys.originX)
                 defaults.set(origin.y, forKey: Keys.originY)
+                movementController?.updateHomePosition(origin)
             }
         }
     }

@@ -52,6 +52,14 @@ final class CompanionSpriteScene: SKScene {
         case .idle:
             bodyNode.position.y += wave * 1.5
             headNode.position.y += wave * 1.5
+        case .turn:
+            bodyNode.zRotation = wave * 0.22
+            headNode.zRotation = -wave * 0.18
+            statusNode.text = "↺"
+            statusNode.alpha = 0.8
+        case .stop:
+            bodyNode.position.y -= abs(wave) * 1.2
+            headNode.position.y -= abs(wave) * 1.0
         case .breathing:
             bodyNode.yScale = 1 + wave * 0.03
             headNode.position.y += wave * 1.0

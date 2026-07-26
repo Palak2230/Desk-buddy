@@ -30,6 +30,9 @@ public struct SettingsView: View {
                 Slider(value: binding(\.characterScale), in: 0.5 ... 2.0) {
                     Text("Character Size")
                 }
+                Slider(value: binding(\.walkingSpeed), in: 120 ... 420) {
+                    Text("Walking Speed")
+                }
                 Toggle("Animations", isOn: binding(\.animationsEnabled))
                 Toggle("Random Idle Actions", isOn: binding(\.randomIdleActionsEnabled))
             }

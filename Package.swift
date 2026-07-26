@@ -22,6 +22,7 @@ let package = Package(
                 "Core",
                 "Presentation",
                 "Services",
+                "Character",
             ],
             path: "Sources/PinkyApp"
         ),

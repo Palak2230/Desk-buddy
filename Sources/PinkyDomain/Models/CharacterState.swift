@@ -3,6 +3,8 @@ import Foundation
 /// All animation states the companion character can be in.
 public enum CharacterState: String, CaseIterable, Codable, Sendable {
     case idle
+    case turn
+    case stop
     case blink
     case breathing
     case walk
@@ -35,7 +37,7 @@ public enum CharacterState: String, CaseIterable, Codable, Sendable {
             return 80
         case .walk, .run:
             return 60
-        case .blink, .think:
+        case .turn, .stop, .blink, .think:
             return 40
         case .idle, .breathing, .sleep:
             return 10
