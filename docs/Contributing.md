@@ -1,11 +1,11 @@
-# Contributing to Pinky
+# Contributing to Desk Buddy
 
-Thank you for your interest in contributing! Pinky is an open-source project built with love.
+Thank you for your interest in contributing! Desk Buddy is an open-source project built with love.
 
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/pinky.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/Desk-buddy.git`
 3. Create a branch: `git checkout -b feature/my-feature`
 4. Build and test: `swift build && swift test`
 5. Commit with clear messages
@@ -25,10 +25,10 @@ Thank you for your interest in contributing! Pinky is an open-source project bui
 
 | Layer | Can Import | Cannot Import |
 |-------|-----------|---------------|
-| PinkyDomain | PinkyCore | Everything else |
-| PinkyServices | Domain, Core, Persistence, Notifications | Presentation, UI |
-| PinkyPresentation | Domain, UI, Services, Skills, Theme | App |
-| PinkyApp | Everything | — |
+| Domain | Core | Everything else |
+| Services | Domain, Core, Persistence, Notifications | Presentation, UI |
+| Presentation | Domain, UI, Services, Skills, Theme | App |
+| DeskBuddyApp | Everything | — |
 
 ## Adding a New Skill
 

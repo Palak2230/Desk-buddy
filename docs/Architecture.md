@@ -1,47 +1,46 @@
 # Architecture
 
-Pinky follows **Clean Architecture** with dependency inversion. Inner layers never depend on outer layers.
+Desk Buddy follows **Clean Architecture** with dependency inversion. Inner layers never depend on outer layers.
 
 ## Layer Diagram
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   PinkyApp                       │
+│                 DeskBuddyApp                     │
 │         (Entry Point, DI, AppDelegate)           │
 ├─────────────────────────────────────────────────┤
-│              PinkyPresentation                   │
+│                 Presentation                     │
 │     (CompanionWindow, Dashboard, Settings)       │
 ├─────────────────────────────────────────────────┤
-│                  PinkyUI                         │
+│                        UI                        │
 │   (CompanionCharacterView, GlassCard, Speech)    │
 ├──────────┬──────────┬──────────┬─────────────────┤
-│ Pinky    │ Pinky    │ Pinky    │ PinkyTheme      │
-│ Skills   │ Character│ Animations│                │
+│ Skills   │ Character│ Animations│ Theme          │
 ├──────────┴──────────┴──────────┴─────────────────┤
-│              PinkyServices                       │
+│                    Services                      │
 │            (AppCoordinator)                    │
 ├─────────────────────────────────────────────────┤
-│     PinkyPersistence  │  PinkyNotifications     │
+│       Persistence     │     Notifications       │
 ├─────────────────────────────────────────────────┤
-│               PinkyDomain                        │
+│                     Domain                       │
 │    (Models, Protocols, Use Cases)                │
 ├─────────────────────────────────────────────────┤
-│                PinkyCore                         │
+│                      Core                        │
 │      (Extensions, Logger, Utilities)             │
 └─────────────────────────────────────────────────┘
 ```
 
 ## Module Responsibilities
 
-### PinkyApp
+### DeskBuddyApp
 | File | Responsibility |
 |------|----------------|
-| `PinkyApp.swift` | SwiftUI `@main` entry point |
+| `PinkyApp.swift` | SwiftUI `@main` entry point (`DeskBuddyApp`) |
 | `AppDelegate.swift` | Lifecycle, menu bar, window management |
 | `CompanionWindowController.swift` | Floating NSPanel for desktop companion |
 | `DI/DependencyContainer.swift` | Root dependency injection container |
 
-### PinkyPresentation
+### Presentation
 | File | Responsibility |
 |------|----------------|
 | `Companion/CompanionWindowView.swift` | Main companion view (character + speech bubble) |
@@ -49,14 +48,14 @@ Pinky follows **Clean Architecture** with dependency inversion. Inner layers nev
 | `MenuBar/MenuBarView.swift` | Menu bar popover content |
 | `Settings/SettingsView.swift` | User settings form |
 
-### PinkyUI
+### UI
 | File | Responsibility |
 |------|----------------|
 | `Components/CompanionCharacterView.swift` | Character placeholder (→ SpriteKit later) |
 | `Components/GlassCard.swift` | Reusable glassmorphism card |
 | `SpeechBubble/SpeechBubbleView.swift` | Speech bubble with action buttons |
 
-### PinkyDomain
+### Domain
 | File | Responsibility |
 |------|----------------|
 | `Models/CharacterState.swift` | Character animation states enum |
@@ -66,47 +65,47 @@ Pinky follows **Clean Architecture** with dependency inversion. Inner layers nev
 | `Protocols/SettingsStoreProtocol.swift` | Settings persistence abstraction |
 | `Protocols/WaterStoreProtocol.swift` | Water data persistence abstraction |
 
-### PinkyServices
+### Services
 | File | Responsibility |
 |------|----------------|
 | `AppCoordinator.swift` | Central app state coordinator |
 
-### PinkySkills
+### Skills
 | File | Responsibility |
 |------|----------------|
 | `Core/SkillRegistry.swift` | Skill registration and lifecycle |
 | `Water/WaterReminderSkill.swift` | Water reminder skill implementation |
 
-### PinkyCharacter
+### Character
 | File | Responsibility |
 |------|----------------|
 | `StateMachine/CharacterStateMachine.swift` | Reusable character FSM |
 
-### PinkyAnimations
+### Animations
 | File | Responsibility |
 |------|----------------|
 | `Engine/AnimationEngine.swift` | Frame sequencer with queue/priority |
 | `Models/AnimationClip.swift` | Animation clip and frame models |
 
-### PinkyTheme
+### Theme
 | File | Responsibility |
 |------|----------------|
-| `Models/PinkyTheme.swift` | Theme data model |
+| `Models/PinkyTheme.swift` | Theme data model (`Theme`) |
 | `Loader/ThemeLoader.swift` | JSON theme loader |
 | `Resources/Themes/*.json` | Bundled theme definitions |
 
-### PinkyPersistence
+### Persistence
 | File | Responsibility |
 |------|----------------|
 | `Stores/SettingsStore.swift` | UserDefaults settings store |
 | `Stores/WaterStore.swift` | UserDefaults water records store |
 
-### PinkyNotifications
+### Notifications
 | File | Responsibility |
 |------|----------------|
 | `NotificationService.swift` | Local notification scheduling |
 
-### PinkyCore
+### Core
 | File | Responsibility |
 |------|----------------|
 | `Extensions/Color+Hex.swift` | Hex color parsing |

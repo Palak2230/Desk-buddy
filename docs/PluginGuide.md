@@ -1,11 +1,11 @@
 # Plugin Guide — Creating Skills
 
-Every Pinky feature is a **Skill**. Skills are modular plugins that can be added without modifying existing code.
+Every Desk Buddy feature is a **Skill**. Skills are modular plugins that can be added without modifying existing code.
 
 ## Skill Protocol
 
 ```swift
-public protocol PinkySkill: AnyObject, Sendable {
+public protocol Skill: AnyObject, Sendable {
     var id: String { get }           // Unique ID, e.g. "water"
     var displayName: String { get }  // "Water Reminder"
     var iconName: String { get }     // SF Symbol name
@@ -26,12 +26,12 @@ Sources/PinkySkills/YourSkill/YourSkill.swift
 
 ```swift
 import Foundation
-import PinkyCore
-import PinkyDomain
-import PinkyCharacter
+import Core
+import Domain
+import Character
 
 @MainActor
-public final class StretchReminderSkill: PinkySkill, ObservableObject {
+public final class StretchReminderSkill: Skill, ObservableObject {
     public let id = "stretch"
     public let displayName = "Stretch Reminder"
     public let iconName = "figure.flexibility"
@@ -43,7 +43,7 @@ public final class StretchReminderSkill: PinkySkill, ObservableObject {
     }
 
     public func activate() async {
-        PinkyLogger.log("StretchSkill", "Activated")
+        AppLogger.log("StretchSkill", "Activated")
         // Schedule reminders, register observers, etc.
     }
 
@@ -63,7 +63,7 @@ await skillRegistry.register(stretchSkill)
 
 ### 4. Add UI (optional)
 
-If your skill needs dashboard widgets or settings, add views in `PinkyPresentation` and wire them through the coordinator.
+If your skill needs dashboard widgets or settings, add views in `Presentation` and wire them through the coordinator.
 
 ## Skill Lifecycle
 
@@ -82,7 +82,7 @@ App Quit   → SkillRegistry.unregister(id)
 - Use `CharacterStateMachine` for companion reactions
 - Use `SpeechBubbleView` for user prompts
 - Schedule reminders via `NotificationService` as fallback
-- Persist skill data through protocol abstractions in `PinkyDomain`
+- Persist skill data through protocol abstractions in `Domain`
 - Keep skill logic in the skill class; don't leak into Presentation
 
 ## Future: External Plugins
@@ -90,7 +90,7 @@ App Quit   → SkillRegistry.unregister(id)
 Milestone 5 will support loading skills from external bundles:
 
 ```
-~/Library/Application Support/Pinky/Skills/
+~/Library/Application Support/DeskBuddy/Skills/
   └── my-custom-skill/
       ├── SkillManifest.json
       └── MyCustomSkill.swiftmodule

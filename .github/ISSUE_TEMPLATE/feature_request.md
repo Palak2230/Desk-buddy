@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a new feature or skill for Pinky
+about: Suggest a new feature or skill for Desk Buddy
 title: "[Feature] "
 labels: enhancement
 assignees: ''

@@ -1,6 +1,6 @@
 # Character Guide
 
-Pinky is an original pastel "it girl" companion — soft, coquette aesthetic with a strawberry milk palette.
+Desk Buddy's companion is an original pastel character — soft, coquette aesthetic with a strawberry milk palette.
 
 ## Visual Design
 
@@ -12,7 +12,7 @@ Pinky is an original pastel "it girl" companion — soft, coquette aesthetic wit
 | Features | Soft blush, expressive eyes |
 | Palette | Strawberry milk (#FFB6C1, #FFF0F5, #FF69B4) |
 
-**Important:** Pinky is an original character. No copyrighted anime or existing IP.
+**Important:** The Desk Buddy companion is original. No copyrighted anime or existing IP.
 
 ## Character States
 
@@ -88,9 +88,9 @@ Ignored:    peek → [speech bubble again]
 
 ## Adding New States
 
-1. Add case to `CharacterState` enum in `PinkyDomain`
+1. Add case to `CharacterState` enum in `Domain`
 2. Set `isLooping` and `priority` properties
-3. Create animation clip in `PinkyAnimations`
+3. Create animation clip in `Animations`
 4. Register clip with `AnimationEngine`
 5. Map state to clip in character renderer (Milestone 2)
 

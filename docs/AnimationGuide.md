@@ -1,6 +1,6 @@
 # Animation Guide
 
-Pinky uses a custom frame-based animation engine built for sprite sequences at 60 FPS.
+Desk Buddy uses a custom frame-based animation engine built for sprite sequences at 60 FPS.
 
 ## Core Concepts
 

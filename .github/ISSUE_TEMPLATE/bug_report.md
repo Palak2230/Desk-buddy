@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in Pinky
+about: Report a bug in Desk Buddy
 title: "[Bug] "
 labels: bug
 assignees: ''
@@ -10,7 +10,7 @@ assignees: ''
 A clear description of the bug.
 
 ## Steps to Reproduce
-1. Open Pinky
+1. Open Desk Buddy
 2. ...
 3. See error
 
@@ -22,7 +22,7 @@ What actually happened.
 
 ## Environment
 - macOS version:
-- Pinky version:
+- Desk Buddy version:
 - Mac model:
 
 ## Screenshots

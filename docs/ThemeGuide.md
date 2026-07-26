@@ -1,6 +1,6 @@
 # Theme Guide
 
-Pinky themes are **JSON-driven** and loaded at runtime from bundled resources.
+Desk Buddy themes are **JSON-driven** and loaded at runtime from bundled resources.
 
 ## Theme JSON Schema
 
@@ -40,7 +40,7 @@ Sources/PinkyTheme/Resources/Themes/your-theme.json
 
 ### 2. Use hex colors
 
-All colors use `#RRGGBB` format. The `Color+Hex` extension in PinkyCore parses them.
+All colors use `#RRGGBB` format. The `Color+Hex` extension in `Core` parses them.
 
 ### 3. Add to settings picker
 
@@ -69,7 +69,7 @@ Picker("Theme", selection: binding(\.themeID)) {
 Themes are injected via SwiftUI environment:
 
 ```swift
-@Environment(\.pinkyTheme) private var theme
+@Environment(\.appTheme) private var theme
 
 Text("Hello")
     .foregroundStyle(Color(hex: theme.text))
@@ -79,7 +79,7 @@ Set the theme at the root:
 
 ```swift
 MyView()
-    .environment(\.pinkyTheme, theme)
+    .environment(\.appTheme, theme)
 ```
 
 ## Loading Themes Programmatically
