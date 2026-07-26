@@ -67,17 +67,7 @@ final class CompanionSpriteScene: SKScene {
         // Keep atlas-frame rendering anchored even after scene resize.
         frameSpriteNode.position = CGPoint(x: size.width / 2, y: 92)
 
-        if let referenceTexture = atlasProvider.texture(named: "reference_fullbody") {
-            frameSpriteNode.texture = referenceTexture
-            frameSpriteNode.size = CGSize(width: 160, height: 160)
-            frameSpriteNode.alpha = 1
-            rootNode.alpha = 0
-            shadowNode.alpha = 0.2
-            applyReferencePose(state: state, frameIndex: frameIndex)
-            return
-        }
-
-        if let frameTexture = atlasProvider.texture(named: frameTextureName(state: state, frameIndex: frameIndex)) {
+        if let frameTexture = atlasProvider.stateTexture(for: state.rawValue, frameIndex: frameIndex) {
             frameSpriteNode.texture = frameTexture
             frameSpriteNode.size = CGSize(width: 128, height: 128)
             frameSpriteNode.alpha = 1
@@ -488,59 +478,5 @@ final class CompanionSpriteScene: SKScene {
             rightFootNode.colorBlendFactor = 0.0
             hasFeetTexture = true
         }
-    }
-
-    private func applyReferencePose(state: CharacterState, frameIndex: Int) {
-        let t = CGFloat(frameIndex)
-        let wave = sin(t * 0.42)
-        let step = sin(t * 0.85)
-
-        frameSpriteNode.zRotation = 0
-        frameSpriteNode.yScale = 1
-        frameSpriteNode.xScale = 1
-        frameSpriteNode.position.y = 92
-
-        switch state {
-        case .idle, .breathing, .stop:
-            frameSpriteNode.position.y += wave * 2
-        case .walk:
-            frameSpriteNode.position.y += abs(step) * 3
-        case .run:
-            frameSpriteNode.position.y += abs(step) * 5
-            frameSpriteNode.zRotation = wave * 0.05
-        case .turn:
-            frameSpriteNode.zRotation = wave * 0.08
-        case .sleep:
-            frameSpriteNode.zRotation = -0.1
-            frameSpriteNode.position.y -= 8
-        case .happy, .celebrate:
-            frameSpriteNode.position.y += abs(wave) * 6
-        case .sad:
-            frameSpriteNode.position.y -= 2
-        case .wave, .drink, .think, .peek, .blink:
-            frameSpriteNode.position.y += wave
-        }
-    }
-
-    private func frameTextureName(state: CharacterState, frameIndex: Int) -> String {
-        let maxIndex: Int
-        switch state {
-        case .idle: maxIndex = 24
-        case .turn: maxIndex = 10
-        case .stop: maxIndex = 8
-        case .blink: maxIndex = 6
-        case .breathing: maxIndex = 20
-        case .walk: maxIndex = 16
-        case .run: maxIndex = 14
-        case .wave: maxIndex = 12
-        case .drink: maxIndex = 12
-        case .sleep: maxIndex = 20
-        case .happy: maxIndex = 12
-        case .sad: maxIndex = 12
-        case .think: maxIndex = 12
-        case .peek: maxIndex = 10
-        case .celebrate: maxIndex = 14
-        }
-        return "\(state.rawValue)_\(frameIndex % max(1, maxIndex))"
     }
 }
