@@ -24,7 +24,10 @@ let package = Package(
                 "Services",
                 "Character",
             ],
-            path: "Sources/PinkyApp"
+            path: "Sources/PinkyApp",
+            resources: [
+                .process("Resources"),
+            ]
         ),
 
         // MARK: - Presentation Layer
