@@ -20,8 +20,10 @@ This document explains how the Desk Buddy mascot character was built, what was a
   - Outfit variants (e.g. `companion_torso_classic`, `companion_hood_sporty`).
 - `Sources/PinkyApp/Resources/CompanionFrames.atlas`
   - State frame textures (`idle_0`, `walk_3`, `sleep_10`, etc.).
-- `Sources/PinkyApp/Resources/reference_fullbody.png`
-  - Single reference-driven full-body mascot image used as highest-priority render path.
+- `Sources/PinkyApp/Resources/Character/`
+  - Data-driven state folders for sprite animation frames:
+    - `Idle/`, `Walk/`, `Blink/`, `Drink/`, `Wave/`, `Happy/`, `Sad/`, `Sleep/`, `Peek/`, `Think/`, `Celebrate/`
+  - Temporary placeholders are generated from existing state frames and can be replaced by final artwork one-to-one.
 
 ### Rendering/loader code
 
@@ -33,12 +35,10 @@ This document explains how the Desk Buddy mascot character was built, what was a
 
 - `Sources/PinkyUI/Components/CompanionSpriteScene.swift`
   - Refactored scene into layered nodes (torso/head/hair/hood/feet/expression).
-  - Added `frameSpriteNode` for frame-based and reference-based sprite rendering.
+  - Added `frameSpriteNode` for frame-based sprite rendering.
   - Added render-priority routing:
-    1. `reference_fullbody`
-    2. state frame textures (e.g. `idle_0`, `run_5`)
-    3. procedural/layered fallback
-  - Added per-state pose adaptation for reference rendering (`applyReferencePose`).
+    1. discovered state sprite frames
+    2. procedural/layered fallback
 
 - `Package.swift`
   - Ensures app resources are included for runtime access:
@@ -49,8 +49,7 @@ This document explains how the Desk Buddy mascot character was built, what was a
 1. `CompanionCharacterView` creates `CompanionSpriteScene`.
 2. On each animation tick, `scene.apply(state:frameIndex:theme:)` runs.
 3. Scene tries to render in this order:
-   - `reference_fullbody.png` (if available),
-   - `CompanionFrames` state texture,
+   - discovered state frame texture (`Character/<State>/*.png`, or legacy `<state>_NN.png`),
    - layered SpriteKit mascot (base + expression + outfit + theme tint).
 4. Character state and frame index still come from existing animation/state systems.
 
@@ -79,9 +78,9 @@ If mascot visuals do not update as expected:
   - `swift build`
   - `swift run DeskBuddy`
 - Confirm resource files exist:
-  - `CompanionFrames.atlas/*`
-  - `reference_fullbody.png`
-- If needed, force-check that `texture(named:)` resolves the expected texture key.
+  - `Character/<State>/*.png` (preferred),
+  - or legacy frame files like `idle_0.png` (fallback source).
+- If needed, check `stateTexture(for:frameIndex:)` resolution in `CompanionAtlasProvider`.
 
 ## Current Status
 
@@ -90,5 +89,5 @@ If mascot visuals do not update as expected:
   - expressions,
   - outfits,
   - frame-based animation textures,
-  - reference full-body override.
+  - state-folder sprite discovery.
 - State integration and app behavior remain intact while mascot visuals are now asset-driven.
