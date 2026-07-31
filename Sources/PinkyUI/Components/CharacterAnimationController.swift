@@ -9,6 +9,7 @@ import Animations
 final class CharacterAnimationController: ObservableObject {
     @Published private(set) var activeState: CharacterState = .idle
     @Published private(set) var frameIndex: Int = 0
+    @Published private(set) var facingRight: Bool = true
 
     private let animationEngine = AnimationEngine()
     private let spriteCatalog = SpriteSheetCatalog()
@@ -23,6 +24,13 @@ final class CharacterAnimationController: ObservableObject {
                 guard let self else { return }
                 activeState = state
                 animationEngine.play(state.rawValue)
+            }
+            .store(in: &cancellables)
+
+        stateMachine.$facingRight
+            .removeDuplicates()
+            .sink { [weak self] isFacingRight in
+                self?.facingRight = isFacingRight
             }
             .store(in: &cancellables)
 

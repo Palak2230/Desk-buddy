@@ -28,9 +28,10 @@ public final class WaterReminderSkill: Skill, ObservableObject {
 
     private enum Constants {
         static let walkInDuration: TimeInterval = 1.2
-        static let greetingWaveDuration: TimeInterval = 5.0
-        static let greetingClosedEyeHold: TimeInterval = 0.25
-        static let greetingPostOpenDelay: TimeInterval = 0.05
+        // Keep reminder pacing snappy after arriving near cursor.
+        static let greetingWaveDuration: TimeInterval = 1.2
+        static let greetingClosedEyeHold: TimeInterval = 0.08
+        static let greetingPostOpenDelay: TimeInterval = 0.02
         static let greetingTotalDuration: TimeInterval = greetingWaveDuration + greetingClosedEyeHold + greetingPostOpenDelay
         static let afterDrinkHappyDelay: TimeInterval = 1.5
         static let afterHappyWalkBackDelay: TimeInterval = 1.2

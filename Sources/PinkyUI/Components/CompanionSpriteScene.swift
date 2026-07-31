@@ -66,9 +66,14 @@ final class CompanionSpriteScene: SKScene {
         applyAtlasTexturesIfAvailable()
     }
 
+    func setFacingRight(_ value: Bool) {
+        facingRight = value
+    }
+
     func apply(state: CharacterState, frameIndex: Int, theme: Theme) {
         if shouldUseRigRenderer {
-            rig.rootNode.position = CGPoint(x: size.width / 2, y: 0)
+            // Keep scaled side-profile head from clipping against top scene bounds.
+            rig.rootNode.position = CGPoint(x: size.width / 2, y: -6)
             rig.applyTheme(theme)
             rigAnimator.apply(state: state, frameIndex: frameIndex, rig: rig, facingRight: &facingRight)
             rig.enforcePartValidationVisibility()
@@ -76,6 +81,10 @@ final class CompanionSpriteScene: SKScene {
             frameSpriteNode.alpha = 0
             rootNode.alpha = 0
             shadowNode.alpha = 0.2
+            shadowNode.position = CGPoint(x: size.width / 2, y: 24)
+            let shadowScale = currentShadowScaleFromRigBodyHeight()
+            shadowNode.xScale = shadowScale
+            shadowNode.yScale = shadowScale
             return
         }
 
@@ -520,5 +529,13 @@ final class CompanionSpriteScene: SKScene {
 
     private var shouldUseRigRenderer: Bool {
         true
+    }
+
+    private func currentShadowScaleFromRigBodyHeight() -> CGFloat {
+        let baseBodyY: CGFloat = 62.0
+        let maxLift: CGFloat = 4.0
+        let bodyLift = max(0, min(maxLift, rig.bodyNode.position.y - baseBodyY))
+        let liftProgress = bodyLift / maxLift
+        return 1.0 - (0.05 * liftProgress)
     }
 }

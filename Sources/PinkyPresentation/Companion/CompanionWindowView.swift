@@ -30,6 +30,7 @@ public struct CompanionWindowView: View {
                     primaryAction: ("Yes!", { waterSkill.confirmDrink() }),
                     secondaryAction: ("Remind me in 5 min", { waterSkill.snooze() })
                 )
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .transition(.opacity)
             }
 

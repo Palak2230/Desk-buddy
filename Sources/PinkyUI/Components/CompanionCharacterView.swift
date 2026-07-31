@@ -40,6 +40,7 @@ public struct CompanionCharacterView: View {
         .scaleEffect(scale)
         .animation(.easeInOut(duration: 0.3), value: stateMachine.currentState)
         .onAppear {
+            scene.setFacingRight(animationController.facingRight)
             scene.apply(
                 state: animationController.activeState,
                 frameIndex: animationController.frameIndex,
@@ -60,6 +61,14 @@ public struct CompanionCharacterView: View {
                 theme: theme
             )
         }
+        .onChange(of: animationController.facingRight) { _, isFacingRight in
+            scene.setFacingRight(isFacingRight)
+            scene.apply(
+                state: animationController.activeState,
+                frameIndex: animationController.frameIndex,
+                theme: theme
+            )
+        }
         .onChange(of: theme.id) { _, _ in
             scene.apply(
                 state: animationController.activeState,
@@ -73,7 +82,7 @@ public struct CompanionCharacterView: View {
 
     private var characterBody: some View {
         SpriteView(scene: scene, options: [.allowsTransparency])
-            .frame(width: 130, height: 160)
+            .frame(width: 140, height: 170)
             .background(Color.clear)
     }
 

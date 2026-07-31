@@ -6,6 +6,7 @@ import Domain
 @MainActor
 public final class CharacterStateMachine: ObservableObject {
     @Published public private(set) var currentState: CharacterState = .idle
+    @Published public private(set) var facingRight = true
 
     private var idleTimer: Timer?
     private let randomIdleEnabled: () -> Bool
@@ -36,6 +37,10 @@ public final class CharacterStateMachine: ObservableObject {
     public func resetToIdle() {
         currentState = .idle
         scheduleRandomIdleAction()
+    }
+
+    public func setFacingRight(_ value: Bool) {
+        facingRight = value
     }
 
     // MARK: - Random Idle Behaviour

@@ -56,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(makeMenuItem(title: "Open Dashboard", action: #selector(openDashboard)))
         menu.addItem(makeMenuItem(title: "Settings", action: #selector(openSettings)))
         menu.addItem(makeMenuItem(title: "Move Buddy To Cursor", action: #selector(moveBuddyToCursor)))
+        menu.addItem(makeMenuItem(title: "Test Walk Across Screen", action: #selector(walkAcrossScreen)))
         menu.addItem(makeMenuItem(title: "Test Water Reminder", action: #selector(testReminder)))
         menu.addItem(.separator())
         menu.addItem(makeMenuItem(title: "Quit Desk Buddy", action: #selector(quit)))
@@ -133,6 +134,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func moveBuddyToCursor() {
         companionWindow?.moveBuddyToCursor(completion: nil)
+    }
+
+    @objc private func walkAcrossScreen() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            Task { @MainActor [weak self] in
+                self?.companionWindow?.walkBuddyAcrossScreen(completion: nil)
+            }
+        }
     }
 
     @objc private func quit() {

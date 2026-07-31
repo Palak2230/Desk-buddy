@@ -27,10 +27,10 @@ final class CompanionWindowController: NSWindowController {
         .environment(\.appTheme, container.coordinator.activeTheme)
 
         let hostingView = NSHostingView(rootView: contentView)
-        hostingView.frame.size = CGSize(width: 160, height: 200)
+        hostingView.frame.size = CGSize(width: 320, height: 220)
 
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 160, height: 200),
+            contentRect: NSRect(x: 0, y: 0, width: 320, height: 220),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -65,7 +65,7 @@ final class CompanionWindowController: NSWindowController {
         )
         container.waterSkill.requestReminderApproach = { [weak self] completion in
             Task { @MainActor [weak self] in
-                self?.movementController?.moveToCursor(completion: completion)
+                self?.movementController?.walkFromLeftEdgeToCursor(completion: completion)
             }
         }
         container.waterSkill.requestReturnHome = { [weak self] in
@@ -88,6 +88,10 @@ final class CompanionWindowController: NSWindowController {
 
     func moveBuddyToCursor(completion: (() -> Void)? = nil) {
         movementController?.moveToCursor(completion: completion)
+    }
+
+    func walkBuddyAcrossScreen(completion: (() -> Void)? = nil) {
+        movementController?.walkAcrossScreen(completion: completion)
     }
 
     deinit {

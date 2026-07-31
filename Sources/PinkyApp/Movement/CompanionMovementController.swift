@@ -23,8 +23,9 @@ final class CompanionMovementController: CompanionMovementControlling {
     }
 
     private enum Timing {
-        static let turnDuration: TimeInterval = 0.2
+        static let turnDuration: TimeInterval = 0.46
         static let stopDuration: TimeInterval = 0.18
+        static let landingBounceDuration: TimeInterval = 0.08
     }
 
     init(
@@ -52,8 +53,7 @@ final class CompanionMovementController: CompanionMovementControlling {
         guard distance > 1 else {
             currentDestination = nil
             isMoving = false
-            stateMachine.transition(to: .stop)
-            enqueueIdleReset()
+            transitionToStopPose()
             pendingCompletion?()
             pendingCompletion = nil
             return
@@ -67,8 +67,10 @@ final class CompanionMovementController: CompanionMovementControlling {
         let newFacing: FacingDirection = destination.x >= start.x ? .right : .left
         let needsTurn = newFacing != facing
         facing = newFacing
+        stateMachine.setFacingRight(newFacing == .right)
 
-        let speed = max(80, walkingSpeedProvider())
+        // Slightly slower travel for a calmer, more readable walk.
+        let speed = max(80, walkingSpeedProvider() * 0.72)
         let duration = distance / speed
 
         let startWalk: @MainActor () -> Void = { [weak self] in
@@ -116,12 +118,77 @@ final class CompanionMovementController: CompanionMovementControlling {
         move(to: CGPoint(x: clampedX, y: clampedY), completion: completion)
     }
 
+    /// Teleports companion to the left edge of the current screen at cursor height,
+    /// then walks to the cursor-side destination used by reminder prompts.
+    func walkFromLeftEdgeToCursor(completion: (() -> Void)? = nil) {
+        guard let panel else { return }
+        let cursor = NSEvent.mouseLocation
+        let panelSize = panel.frame.size
+
+        let containingFrame = NSScreen.screens
+            .map(\.visibleFrame)
+            .first(where: { $0.contains(cursor) }) ?? NSScreen.main?.visibleFrame
+
+        guard let frame = containingFrame else {
+            moveToCursor(completion: completion)
+            return
+        }
+
+        let sideOffset: CGFloat = 30
+        let targetX = cursor.x - panelSize.width - sideOffset
+        let targetY = cursor.y - panelSize.height / 2
+        let destinationX = min(max(targetX, frame.minX + 8), frame.maxX - panelSize.width - 8)
+        let destinationY = min(max(targetY, frame.minY + 8), frame.maxY - panelSize.height - 8)
+
+        let startX = frame.minX + 8
+        movementToken = UUID()
+        pendingCompletion = nil
+        isMoving = false
+        currentDestination = nil
+        facing = .right
+        stateMachine.setFacingRight(true)
+        panel.setFrameOrigin(CGPoint(x: startX, y: destinationY))
+
+        move(to: CGPoint(x: destinationX, y: destinationY), completion: completion)
+    }
+
+    /// Teleports the buddy to the left edge of the current screen at cursor height,
+    /// then walks straight across to the right edge.
+    func walkAcrossScreen(completion: (() -> Void)? = nil) {
+        guard let panel else { return }
+        let cursor = NSEvent.mouseLocation
+        let panelSize = panel.frame.size
+
+        let containingFrame = NSScreen.screens
+            .map(\.visibleFrame)
+            .first(where: { $0.contains(cursor) }) ?? NSScreen.main?.visibleFrame
+
+        guard let frame = containingFrame else { return }
+
+        let walkY = min(
+            max(cursor.y - panelSize.height / 2, frame.minY + 8),
+            frame.maxY - panelSize.height - 8
+        )
+        let startX = frame.minX + 8
+        let endX = frame.maxX - panelSize.width - 8
+
+        movementToken = UUID()
+        pendingCompletion = nil
+        isMoving = false
+        currentDestination = nil
+
+        facing = .right
+        stateMachine.setFacingRight(true)
+        panel.setFrameOrigin(CGPoint(x: startX, y: walkY))
+
+        move(to: CGPoint(x: endX, y: walkY), completion: completion)
+    }
+
     func cancelMovement() {
         movementToken = UUID()
         isMoving = false
         currentDestination = nil
-        stateMachine.transition(to: .stop)
-        enqueueIdleReset()
+        transitionToStopPose()
         pendingCompletion = nil
     }
 
@@ -151,10 +218,12 @@ final class CompanionMovementController: CompanionMovementControlling {
             panel.setFrameOrigin(destination)
             currentDestination = nil
             isMoving = false
-            stateMachine.transition(to: .stop)
-            enqueueIdleReset()
-            pendingCompletion?()
+            transitionToStopPose()
+            let completion = pendingCompletion
             pendingCompletion = nil
+            DispatchQueue.main.asyncAfter(deadline: .now() + Timing.landingBounceDuration) {
+                completion?()
+            }
         }
 
         func step() {
@@ -184,5 +253,12 @@ final class CompanionMovementController: CompanionMovementControlling {
         }
 
         step()
+    }
+
+    private func transitionToStopPose() {
+        // `stop` has lower priority than `run`; reset first so stop can apply.
+        stateMachine.resetToIdle()
+        stateMachine.transition(to: .stop)
+        enqueueIdleReset()
     }
 }

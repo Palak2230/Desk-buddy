@@ -24,6 +24,8 @@ public struct SpeechBubbleView: View {
             Text(message)
                 .font(.system(size: 13, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: theme.text))
+                .frame(maxWidth: 270, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
 
             if primaryAction != nil || secondaryAction != nil {
                 HStack(spacing: 8) {
@@ -37,6 +39,7 @@ public struct SpeechBubbleView: View {
             }
         }
         .padding(12)
+        .frame(maxWidth: 290, alignment: .leading)
         .background {
             RoundedRectangle(cornerRadius: 14)
                 .fill(Color(hex: theme.speechBubble))
